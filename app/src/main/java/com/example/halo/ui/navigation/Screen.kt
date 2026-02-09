@@ -1,0 +1,12 @@
+package com.example.halo.ui.navigation
+
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object AddAlarm : Screen("add_alarm")
+    object AlarmTrigger : Screen("alarm_trigger/{alarmId}") {
+        fun createRoute(alarmId: String) = "alarm_trigger/$alarmId"
+    }
+    object Settings : Screen("settings")
+    object Walkthrough : Screen("walkthrough")
+    object Splash : Screen("splash")
+}
