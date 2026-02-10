@@ -101,6 +101,8 @@ fun SettingsScreen(
     val batteryOptimized by viewModel.batteryOptimizationIgnored.collectAsState()
     val availableRingtones by viewModel.availableRingtones.collectAsState()
 
+    var showHelpDialog by remember { mutableStateOf(false) }
+
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.developer_support))
 
     val context = LocalContext.current
@@ -337,6 +339,7 @@ fun SettingsScreen(
                  val currentSound by viewModel.alarmSound.collectAsState()
                  var showSoundDialog by remember { mutableStateOf(false) }
 
+
                  SettingsItem(
                     icon = Icons.Default.MusicNote,
                     title = "Alarm Sound",
@@ -376,8 +379,37 @@ fun SettingsScreen(
                         trailing = {
                             Icon(Icons.Default.OpenInNew, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                         },
-                         onClick = { /* Open Url */ }
+                        onClick = { showHelpDialog = true }
                     )
+                    
+                    if (showHelpDialog) {
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { showHelpDialog = false },
+                            title = {
+                                Text(
+                                    text = "Help Center & Privacy",
+                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "The purpose of this app is to provide location-based alarms. \n\nThe access permissions requested (Location, Notification) are strictly necessary for the core functionality of triggering alarms when you reach your destination. \n\nWe do not use, store, or share your personal information for any other purpose.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = { showHelpDialog = false }
+                                ) {
+                                    Text("Got it", fontWeight = FontWeight.Bold)
+                                }
+                            },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     SettingsDivider()
                     SettingsItem(
                         icon = Icons.Default.Info,

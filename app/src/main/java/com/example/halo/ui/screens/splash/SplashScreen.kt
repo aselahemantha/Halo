@@ -31,7 +31,7 @@ fun SplashScreen(
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.splash_animation))
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(1000)
         if (isFirstLaunch) {
             onNavigateToOnboarding()
         } else {

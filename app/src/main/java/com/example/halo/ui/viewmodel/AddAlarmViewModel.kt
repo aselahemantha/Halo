@@ -202,12 +202,7 @@ class AddAlarmViewModel @Inject constructor(
             val id = repository.insertAlarm(alarm)
             geofenceManager.addGeofence(alarm.copy(id = id))
 
-            // Trigger alarm immediately for testing
-            val serviceIntent = android.content.Intent(context, com.example.halo.services.LocationForegroundService::class.java).apply {
-                action = com.example.halo.services.LocationForegroundService.ACTION_TRIGGER_ALARM
-                putExtra(com.example.halo.services.LocationForegroundService.EXTRA_ALARM_ID, id.toString())
-            }
-            context.startForegroundService(serviceIntent)
+
 
             onSuccess()
         }
