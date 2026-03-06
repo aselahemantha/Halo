@@ -39,8 +39,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlarmRepository(dao: AlarmDao): AlarmRepository {
-        return AlarmRepositoryImpl(dao)
+    fun provideAlarmHistoryDao(db: AlarmDatabase): com.example.halo.data.local.AlarmHistoryDao {
+        return db.alarmHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlarmRepository(dao: AlarmDao, historyDao: com.example.halo.data.local.AlarmHistoryDao): AlarmRepository {
+        return AlarmRepositoryImpl(dao, historyDao)
     }
 
     @Provides

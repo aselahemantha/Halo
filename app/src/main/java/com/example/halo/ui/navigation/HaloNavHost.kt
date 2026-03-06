@@ -13,6 +13,7 @@ import com.example.halo.ui.screens.home.HomeScreen
 import com.example.halo.ui.screens.settings.SettingsScreen
 import com.example.halo.ui.screens.walkthrough.WalkthroughScreen
 import com.example.halo.ui.screens.splash.SplashScreen
+import com.example.halo.ui.screens.alarm_history.AlarmHistoryScreen
 
 @Composable
 fun HaloNavHost(
@@ -43,6 +44,7 @@ fun HaloNavHost(
             HomeScreen(
                 onNavigateToAddAlarm = { navController.navigate(Screen.AddAlarm.route) },
                 onNavigateToEditAlarm = { alarmId -> navController.navigate(Screen.EditAlarm.createRoute(alarmId)) },
+                onNavigateToHistory = { navController.navigate(Screen.AlarmHistory.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
@@ -76,6 +78,11 @@ fun HaloNavHost(
                 onAlarmSaved = {
                     navController.popBackStack()
                 }
+            )
+        }
+        composable(Screen.AlarmHistory.route) {
+            AlarmHistoryScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Settings.route) {

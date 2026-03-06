@@ -138,6 +138,18 @@ class LocationForegroundService : Service() {
                 else RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             }
 
+            // Log the trigger history
+            if (alarm != null) {
+                val history = com.example.halo.domain.model.AlarmHistory(
+                    alarmId = alarm.id,
+                    alarmName = alarm.name,
+                    triggerTime = System.currentTimeMillis(),
+                    latitude = alarm.latitude,
+                    longitude = alarm.longitude
+                )
+                alarmRepository.insertAlarmHistory(history)
+            }
+
             playAlarmSound(soundUri)
             vibrate()
         }

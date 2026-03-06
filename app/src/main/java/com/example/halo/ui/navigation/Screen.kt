@@ -9,6 +9,7 @@ sealed class Screen(val route: String) {
     object EditAlarm : Screen("edit_alarm/{alarmId}") {
         fun createRoute(alarmId: Long) = "edit_alarm/$alarmId"
     }
+    object AlarmHistory : Screen("alarm_history")
     object Settings : Screen("settings")
     object Walkthrough : Screen("walkthrough")
     object Splash : Screen("splash")

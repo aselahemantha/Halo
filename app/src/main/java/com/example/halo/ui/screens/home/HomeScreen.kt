@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.SettingsApplications
@@ -84,6 +85,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun HomeScreen(
     onNavigateToAddAlarm: () -> Unit,
     onNavigateToEditAlarm: (Long) -> Unit,
+    onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -159,11 +161,19 @@ fun HomeScreen(
 
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = "Alarm History",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.SettingsSuggest,
                             contentDescription = "Settings",
-                            modifier = Modifier.size(32.dp))
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
