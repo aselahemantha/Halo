@@ -83,6 +83,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun HomeScreen(
     onNavigateToAddAlarm: () -> Unit,
+    onNavigateToEditAlarm: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -132,6 +133,18 @@ fun HomeScreen(
         )
     }
 
+    val checkPermissions = {
+        val hasPermissions = permissions.all {
+            androidx.core.content.ContextCompat.checkSelfPermission(context, it) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        if (!hasPermissions) {
+            showPermissionDialog = true
+            false
+        } else {
+            true
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -161,7 +174,11 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAddAlarm,
+                onClick = {
+                    if (checkPermissions()) {
+                        onNavigateToAddAlarm()
+                    }
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp),
@@ -196,7 +213,14 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 CurrentStatusCard(
                     currentLocation = currentLocation,
-                    currentAddress = currentAddress
+                    currentAddress = currentAddress,
+                    onLocationClick = {
+                        if (checkPermissions()) {
+                            // Logic to focus location could be added here if needed, 
+                            // but for now we just want to ensure permissions are checked.
+                            // The card itself handles camera updates when location changes.
+                        }
+                    }
                 )
             }
 
@@ -234,6 +258,7 @@ fun HomeScreen(
                 AlarmItem(
                     alarm = alarm,
                     onToggle = { isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) },
+                    onEdit = { onNavigateToEditAlarm(alarm.id) },
                     onDelete = { viewModel.deleteAlarm(alarm) }
                 )
             }

@@ -40,7 +40,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun CurrentStatusCard(
     currentLocation: LatLng?,
-    currentAddress: String
+    currentAddress: String,
+    onLocationClick: () -> Unit
 ) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(currentLocation ?: LatLng(0.0, 0.0), 15f)
@@ -117,7 +118,7 @@ fun CurrentStatusCard(
                 }
                 
                 IconButton(
-                    onClick = { /* Focus Location */ },
+                    onClick = onLocationClick,
                     modifier = Modifier
                         .size(48.dp)
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)

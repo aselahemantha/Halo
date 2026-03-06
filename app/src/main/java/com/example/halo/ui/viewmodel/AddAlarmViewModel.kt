@@ -21,6 +21,7 @@ class AddAlarmViewModel @Inject constructor(
     private val userPreferencesRepository: com.example.halo.data.repository.UserPreferencesRepository,
     private val fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
     private val placesClient: com.google.android.libraries.places.api.net.PlacesClient,
+    savedStateHandle: androidx.lifecycle.SavedStateHandle,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
 
@@ -32,6 +33,9 @@ class AddAlarmViewModel @Inject constructor(
 
     private val _locationName = MutableStateFlow("")
     val locationName: StateFlow<String> = _locationName.asStateFlow()
+
+    private val _editingAlarmId = MutableStateFlow<Long?>(null)
+    val editingAlarmId: StateFlow<Long?> = _editingAlarmId.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -72,12 +76,31 @@ class AddAlarmViewModel @Inject constructor(
     }
 
     init {
-        viewModelScope.launch {
-            userPreferencesRepository.alarmSound.collect { (uri, title) ->
-                if (_alertSoundUri.value == null) { // Only set if not already set (e.g. rotation)
-                    _alertSound.value = title
-                    _alertSoundUri.value = uri
+        val alarmId = savedStateHandle.get<Long>("alarmId")
+        if (alarmId != null && alarmId != -1L) {
+            _editingAlarmId.value = alarmId
+            loadAlarmData(alarmId)
+        } else {
+            viewModelScope.launch {
+                userPreferencesRepository.alarmSound.collect { (uri, title) ->
+                    if (_alertSoundUri.value == null) { // Only set if not already set (e.g. rotation)
+                        _alertSound.value = title
+                        _alertSoundUri.value = uri
+                    }
                 }
+            }
+        }
+    }
+
+    private fun loadAlarmData(alarmId: Long) {
+        viewModelScope.launch {
+            val alarm = repository.getAlarmById(alarmId)
+            if (alarm != null) {
+                _selectedLocation.value = LatLng(alarm.latitude, alarm.longitude)
+                _radius.value = alarm.radius
+                _locationName.value = alarm.name
+                _alertSound.value = alarm.soundTitle ?: "Default"
+                _alertSoundUri.value = alarm.soundUri
             }
         }
     }
@@ -190,7 +213,10 @@ class AddAlarmViewModel @Inject constructor(
         val name = _locationName.value.ifBlank { "Location Alarm" }
         
         viewModelScope.launch {
+            val isEdit = _editingAlarmId.value != null
+            val alarmId = _editingAlarmId.value ?: 0L
             val alarm = Alarm(
+                id = alarmId,
                 latitude = location.latitude,
                 longitude = location.longitude,
                 radius = _radius.value,
@@ -199,10 +225,14 @@ class AddAlarmViewModel @Inject constructor(
                 soundUri = _alertSoundUri.value,
                 soundTitle = _alertSound.value
             )
-            val id = repository.insertAlarm(alarm)
-            geofenceManager.addGeofence(alarm.copy(id = id))
-
-
+            
+            if (isEdit) {
+                repository.updateAlarm(alarm)
+                geofenceManager.addGeofence(alarm)
+            } else {
+                val newId = repository.insertAlarm(alarm)
+                geofenceManager.addGeofence(alarm.copy(id = newId))
+            }
 
             onSuccess()
         }

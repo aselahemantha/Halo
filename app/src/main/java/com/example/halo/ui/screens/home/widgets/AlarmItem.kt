@@ -17,8 +17,10 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,7 @@ import com.example.halo.domain.model.Alarm
 fun AlarmItem(
     alarm: Alarm,
     onToggle: (Boolean) -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
@@ -133,6 +136,14 @@ fun AlarmItem(
                         )
                     }
                     
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Alarm",
+                            tint = Color.Gray
+                        )
+                    }
+
                     Switch(
                         checked = alarm.isEnabled,
                         onCheckedChange = onToggle,

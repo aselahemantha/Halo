@@ -1,0 +1,21 @@
+Here are all 18 suggested features in point form:
+
+Edit Existing Alarms — modify name, radius, sound, or location without deleting
+Alarm History / Trigger Log — track when and where alarms were triggered
+Search & Filter Alarms — search by name, filter by active/inactive/proximity
+Alarm Groups / Categories — organize alarms with tags like "Work", "Travel"
+Recurring / Scheduled Alarms — e.g., weekdays only, or specific time windows
+Enter / Exit / Dwell Triggers — alert on leaving a zone or staying for X minutes
+ETA / Distance Display — show distance to each alarm from current location
+Share Alarm via Deep Link / QR Code — share a location alarm with others
+Backup & Restore (Export/Import) — export alarms as JSON, import on another device
+Home Screen Widget — show active count, nearest alarm, or quick-add shortcut
+Map Marker Clustering — prevent overlapping markers when many alarms are nearby
+Haptic Feedback & Micro-Animations — subtle feedback on toggle/delete, Lottie empty states
+Configurable Snooze Duration — let users pick 5/10/15/30 min snooze
+Multi-Language / Localization (i18n) — extract strings to strings.xml
+Onboarding Tooltips / Coach Marks — contextual tips on first use of features
+Unit & Integration Tests — tests for repository, geofence manager, and viewmodels
+Re-register Geofences on Boot — critical: OS clears geofences after reboot
+Crashlytics / Analytics Integration — crash reporting and usage tracking
+Let me know which ones you'd like me to implement! 🚀

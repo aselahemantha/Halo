@@ -100,6 +100,8 @@ fun AddLocationAlarmScreen(
     val alertSoundUri by viewModel.alertSoundUri.collectAsState()
     val alertSound by viewModel.alertSound.collectAsState()
     val searchSuggestions by viewModel.searchSuggestions.collectAsState()
+    val editingAlarmId by viewModel.editingAlarmId.collectAsState()
+    val isEditMode = editingAlarmId != null
     val context = androidx.compose.ui.platform.LocalContext.current
 
 
@@ -167,7 +169,7 @@ fun AddLocationAlarmScreen(
                     Icon(Icons.Default.ArrowBack, "Back")
                 }
                 Text(
-                    text = "Set New Alarm",
+                    text = if (isEditMode) "Edit Alarm" else "Set New Alarm",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier
                         .background(Color.Transparent, CircleShape)
@@ -438,7 +440,7 @@ fun AddLocationAlarmScreen(
                     shape = RoundedCornerShape(28.dp),
                     enabled = selectedLocation != null
                 ) {
-                    Text("Save Alarm", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(if (isEditMode) "Update Alarm" else "Save Alarm", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
             }
         }

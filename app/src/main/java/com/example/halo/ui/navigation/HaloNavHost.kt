@@ -42,6 +42,7 @@ fun HaloNavHost(
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToAddAlarm = { navController.navigate(Screen.AddAlarm.route) },
+                onNavigateToEditAlarm = { alarmId -> navController.navigate(Screen.EditAlarm.createRoute(alarmId)) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
@@ -63,6 +64,17 @@ fun HaloNavHost(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
+                }
+            )
+        }
+        composable(
+            route = Screen.EditAlarm.route,
+            arguments = listOf(navArgument("alarmId") { type = NavType.LongType })
+        ) {
+            AddLocationAlarmScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAlarmSaved = {
+                    navController.popBackStack()
                 }
             )
         }
