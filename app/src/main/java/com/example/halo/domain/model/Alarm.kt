@@ -6,8 +6,9 @@ data class Alarm(
     val longitude: Double,
     val radius: Double,
     val name: String,
-    val isEnabled: Boolean,
+    val isEnabled: Boolean = true,
     val createdDate: Long = System.currentTimeMillis(),
     val soundUri: String? = null,
-    val soundTitle: String? = null
+    val soundTitle: String? = null,
+    val category: String = "General"
 )

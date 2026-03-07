@@ -101,6 +101,7 @@ fun AddLocationAlarmScreen(
     val alertSound by viewModel.alertSound.collectAsState()
     val searchSuggestions by viewModel.searchSuggestions.collectAsState()
     val editingAlarmId by viewModel.editingAlarmId.collectAsState()
+    val category by viewModel.category.collectAsState()
     val isEditMode = editingAlarmId != null
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -357,6 +358,30 @@ fun AddLocationAlarmScreen(
                     },
                     placeholder = { Text("e.g. Blue Bottle Coffee") }
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Category Selection
+                Text("Category", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(8.dp))
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val categories = listOf("General", "Work", "Home", "Travel", "Store")
+                    items(categories.size) { index ->
+                        val cat = categories[index]
+                        FilterChip(
+                            selected = category == cat,
+                            onClick = { viewModel.updateCategory(cat) },
+                            label = { Text(cat) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
                 

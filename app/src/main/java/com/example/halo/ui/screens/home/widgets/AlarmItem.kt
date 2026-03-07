@@ -80,22 +80,22 @@ fun AlarmItem(
             }
         },
         content = {
-            val icon = when {
-                alarm.name.contains("Home", ignoreCase = true) -> Icons.Default.Home
-                alarm.name.contains("Work", ignoreCase = true) -> Icons.Default.Work
-                alarm.name.contains("Store", ignoreCase = true) || alarm.name.contains("Grocery", ignoreCase = true) -> Icons.Default.ShoppingCart
+            val icon = when (alarm.category) {
+                "Home" -> Icons.Default.Home
+                "Work" -> Icons.Default.Work
+                "Store" -> Icons.Default.ShoppingCart
                 else -> Icons.Default.MyLocation
             }
             
-            val iconColor = when {
-                alarm.name.contains("Home", ignoreCase = true) -> Color(0xFFE8F5E9) // Light Green
-                alarm.name.contains("Work", ignoreCase = true) -> Color(0xFFE3F2FD) // Light Blue
+            val iconColor = when (alarm.category) {
+                "Home" -> Color(0xFFE8F5E9) // Light Green
+                "Work" -> Color(0xFFE3F2FD) // Light Blue
                 else -> Color(0xFFFFF3E0) // Light Orange
             }
             
-            val iconTint = when {
-                alarm.name.contains("Home", ignoreCase = true) -> Color(0xFF4CAF50)
-                alarm.name.contains("Work", ignoreCase = true) -> Color(0xFF2196F3)
+            val iconTint = when (alarm.category) {
+                "Home" -> Color(0xFF4CAF50)
+                "Work" -> Color(0xFF2196F3)
                 else -> Color(0xFFFF9800)
             }
 
@@ -129,11 +129,25 @@ fun AlarmItem(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = if (alarm.isEnabled) "Arriving within ${alarm.radius.toInt()}m" else "Disabled",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.Surface(
+                                color = iconColor.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(4.dp),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Text(
+                                    text = alarm.category,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = iconTint,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                            }
+                            Text(
+                                text = if (alarm.isEnabled) "Arriving within ${alarm.radius.toInt()}m" else "Disabled",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
+                        }
                     }
                     
                     IconButton(onClick = onEdit) {

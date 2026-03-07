@@ -37,6 +37,9 @@ class AddAlarmViewModel @Inject constructor(
     private val _editingAlarmId = MutableStateFlow<Long?>(null)
     val editingAlarmId: StateFlow<Long?> = _editingAlarmId.asStateFlow()
 
+    private val _category = MutableStateFlow("General")
+    val category: StateFlow<String> = _category.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
@@ -101,8 +104,13 @@ class AddAlarmViewModel @Inject constructor(
                 _locationName.value = alarm.name
                 _alertSound.value = alarm.soundTitle ?: "Default"
                 _alertSoundUri.value = alarm.soundUri
+                _category.value = alarm.category
             }
         }
+    }
+
+    fun updateCategory(newCategory: String) {
+        _category.value = newCategory
     }
 
     fun updateLocation(latLng: LatLng) {
@@ -223,7 +231,8 @@ class AddAlarmViewModel @Inject constructor(
                 name = name,
                 isEnabled = true,
                 soundUri = _alertSoundUri.value,
-                soundTitle = _alertSound.value
+                soundTitle = _alertSound.value,
+                category = _category.value
             )
             
             if (isEdit) {

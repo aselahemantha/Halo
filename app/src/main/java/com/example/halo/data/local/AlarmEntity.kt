@@ -14,5 +14,6 @@ data class AlarmEntity(
     val isEnabled: Boolean,
     val createdDate: Long = System.currentTimeMillis(),
     val soundUri: String? = null,
-    val soundTitle: String? = null
+    val soundTitle: String? = null,
+    val category: String = "General"
 )

@@ -65,7 +65,8 @@ class AlarmRepositoryImpl(
             isEnabled = isEnabled,
             createdDate = createdDate,
             soundUri = soundUri,
-            soundTitle = soundTitle
+            soundTitle = soundTitle,
+            category = category
         )
     }
 
@@ -79,7 +80,8 @@ class AlarmRepositoryImpl(
             isEnabled = isEnabled,
             createdDate = createdDate,
             soundUri = soundUri,
-            soundTitle = soundTitle
+            soundTitle = soundTitle,
+            category = category
         )
     }
 
