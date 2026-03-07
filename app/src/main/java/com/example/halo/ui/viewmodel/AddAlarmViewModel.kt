@@ -55,6 +55,12 @@ class AddAlarmViewModel @Inject constructor(
     private val _endTimeMinute = MutableStateFlow<Int?>(null)
     val endTimeMinute: StateFlow<Int?> = _endTimeMinute.asStateFlow()
 
+    private val _triggerType = MutableStateFlow("ENTER")
+    val triggerType: StateFlow<String> = _triggerType.asStateFlow()
+
+    private val _dwellTimeMinutes = MutableStateFlow<Int?>(null)
+    val dwellTimeMinutes: StateFlow<Int?> = _dwellTimeMinutes.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
@@ -125,6 +131,8 @@ class AddAlarmViewModel @Inject constructor(
                 _startTimeMinute.value = alarm.startTimeMinute
                 _endTimeHour.value = alarm.endTimeHour
                 _endTimeMinute.value = alarm.endTimeMinute
+                _triggerType.value = alarm.triggerType
+                _dwellTimeMinutes.value = alarm.dwellTimeMinutes
             }
         }
     }
@@ -148,6 +156,14 @@ class AddAlarmViewModel @Inject constructor(
         _startTimeMinute.value = startMinute
         _endTimeHour.value = endHour
         _endTimeMinute.value = endMinute
+    }
+
+    fun updateTriggerType(type: String) {
+        _triggerType.value = type
+    }
+    
+    fun updateDwellTime(minutes: Int?) {
+        _dwellTimeMinutes.value = minutes
     }
 
     fun updateLocation(latLng: LatLng) {
@@ -274,7 +290,9 @@ class AddAlarmViewModel @Inject constructor(
                 startTimeHour = _startTimeHour.value,
                 startTimeMinute = _startTimeMinute.value,
                 endTimeHour = _endTimeHour.value,
-                endTimeMinute = _endTimeMinute.value
+                endTimeMinute = _endTimeMinute.value,
+                triggerType = _triggerType.value,
+                dwellTimeMinutes = _dwellTimeMinutes.value
             )
             
             if (isEdit) {

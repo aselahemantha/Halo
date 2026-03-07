@@ -71,7 +71,9 @@ class AlarmRepositoryImpl(
             startTimeHour = startTimeHour,
             startTimeMinute = startTimeMinute,
             endTimeHour = endTimeHour,
-            endTimeMinute = endTimeMinute
+            endTimeMinute = endTimeMinute,
+            triggerType = triggerType,
+            dwellTimeMinutes = dwellTimeMinutes
         )
     }
 
@@ -91,7 +93,9 @@ class AlarmRepositoryImpl(
             startTimeHour = startTimeHour,
             startTimeMinute = startTimeMinute,
             endTimeHour = endTimeHour,
-            endTimeMinute = endTimeMinute
+            endTimeMinute = endTimeMinute,
+            triggerType = triggerType,
+            dwellTimeMinutes = dwellTimeMinutes
         )
     }
 

@@ -34,17 +34,33 @@ class GeofenceManager @Inject constructor(
 
     @SuppressLint("MissingPermission") // Permissions are handled in UI
     suspend fun addGeofence(alarm: Alarm) {
-        val geofence = Geofence.Builder()
+        val transitionType = when (alarm.triggerType) {
+            "EXIT" -> Geofence.GEOFENCE_TRANSITION_EXIT
+            "DWELL" -> Geofence.GEOFENCE_TRANSITION_DWELL
+            else -> Geofence.GEOFENCE_TRANSITION_ENTER
+        }
+
+        val geofenceBuilder = Geofence.Builder()
             .setRequestId(alarm.id.toString())
             .setCircularRegion(alarm.latitude, alarm.longitude, alarm.radius.toFloat())
-            // Set the expiration duration of the geofence. This geofence gets automatically
-            // removed after this period of time.
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .build()
+            .setTransitionTypes(transitionType)
+            
+        if (transitionType == Geofence.GEOFENCE_TRANSITION_DWELL) {
+            val minutes = alarm.dwellTimeMinutes ?: 5
+            geofenceBuilder.setLoiteringDelay(minutes * 60 * 1000)
+        }
+
+        val geofence = geofenceBuilder.build()
+
+        val initialTrigger = when (transitionType) {
+            Geofence.GEOFENCE_TRANSITION_EXIT -> GeofencingRequest.INITIAL_TRIGGER_EXIT
+            Geofence.GEOFENCE_TRANSITION_DWELL -> GeofencingRequest.INITIAL_TRIGGER_DWELL
+            else -> GeofencingRequest.INITIAL_TRIGGER_ENTER
+        }
 
         val request = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .setInitialTrigger(initialTrigger)
             .addGeofence(geofence)
             .build()
 

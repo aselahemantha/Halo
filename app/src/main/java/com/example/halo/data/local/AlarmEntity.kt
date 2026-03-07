@@ -20,5 +20,7 @@ data class AlarmEntity(
     val startTimeHour: Int? = null,
     val startTimeMinute: Int? = null,
     val endTimeHour: Int? = null,
-    val endTimeMinute: Int? = null
+    val endTimeMinute: Int? = null,
+    val triggerType: String = "ENTER",
+    val dwellTimeMinutes: Int? = null
 )

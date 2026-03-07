@@ -115,6 +115,8 @@ fun AddLocationAlarmScreen(
     val startTimeMinute by viewModel.startTimeMinute.collectAsState()
     val endTimeHour by viewModel.endTimeHour.collectAsState()
     val endTimeMinute by viewModel.endTimeMinute.collectAsState()
+    val triggerType by viewModel.triggerType.collectAsState()
+    val dwellTimeMinutes by viewModel.dwellTimeMinutes.collectAsState()
     val isEditMode = editingAlarmId != null
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -429,6 +431,51 @@ fun AddLocationAlarmScreen(
                     Text("5KM", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                 }
                 
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // --- Trigger Section ---
+                Text("Trigger", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val map = mapOf("ENTER" to "Arrive", "EXIT" to "Leave", "DWELL" to "Stay")
+                    map.forEach { (type, label) ->
+                        FilterChip(
+                            selected = triggerType == type,
+                            onClick = { viewModel.updateTriggerType(type) },
+                            label = { Text(label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
+                
+                if (triggerType == "DWELL") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Dwell Time", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "${dwellTimeMinutes ?: 5} min", 
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Slider(
+                        value = (dwellTimeMinutes ?: 5).toFloat(),
+                        onValueChange = { viewModel.updateDwellTime(it.toInt()) },
+                        valueRange = 1f..60f,
+                        steps = 58
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 // --- Schedule Section ---
