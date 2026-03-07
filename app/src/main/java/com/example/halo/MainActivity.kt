@@ -105,6 +105,15 @@ class MainActivity : ComponentActivity() {
 
         // Handle shared alarm URI deep link (halo://alarm?...)
         val data = intent.data
+
+        if (data != null && data.scheme == "halo" && data.host == "alarm_shortcut") {
+            navController.navigate(Screen.AddAlarm.route) {
+                launchSingleTop = true
+            }
+            intent.data = null
+            return
+        }
+
         if (data != null && data.scheme == "halo" && data.host == "alarm") {
             val name = data.getQueryParameter("name") ?: ""
             val lat = data.getQueryParameter("lat")?.toDoubleOrNull() ?: 0.0

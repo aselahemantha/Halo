@@ -116,6 +116,10 @@ dependencies {
     // ZXing for QR Code generation
     implementation("com.google.zxing:core:3.5.3")
 
+    // Jetpack Glance for App Widgets
+    implementation("androidx.glance:glance-appwidget:1.0.0")
+    implementation("androidx.glance:glance-material3:1.0.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
