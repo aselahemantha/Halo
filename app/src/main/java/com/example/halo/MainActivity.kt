@@ -92,11 +92,40 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?, navController: NavHostController) {
-        if (intent?.getStringExtra("navigate_to") == "trigger_screen") {
+        if (intent == null) return
+
+        // Handle alarm trigger deep link
+        if (intent.getStringExtra("navigate_to") == "trigger_screen") {
             val alarmId = intent.getStringExtra("alarm_id") ?: return
             navController.navigate(Screen.AlarmTrigger.createRoute(alarmId)) {
                 launchSingleTop = true
             }
+            return
+        }
+
+        // Handle shared alarm URI deep link (halo://alarm?...)
+        val data = intent.data
+        if (data != null && data.scheme == "halo" && data.host == "alarm") {
+            val name = data.getQueryParameter("name") ?: ""
+            val lat = data.getQueryParameter("lat")?.toDoubleOrNull() ?: 0.0
+            val lng = data.getQueryParameter("lng")?.toDoubleOrNull() ?: 0.0
+            val radius = data.getQueryParameter("radius")?.toDoubleOrNull() ?: 800.0
+            val category = data.getQueryParameter("category") ?: "General"
+
+            // Since our nav graph doesn't pass all these as primitives in the route by default,
+            // we can use the NavController's SavedStateHandle to pass complex data or multiple fields to AddAlarmScreen / AddAlarmViewModel.
+            // A common pattern is to set it in the currentBackStackEntry before navigating:
+            navController.currentBackStackEntry?.savedStateHandle?.set("shared_name", name)
+            navController.currentBackStackEntry?.savedStateHandle?.set("shared_lat", lat)
+            navController.currentBackStackEntry?.savedStateHandle?.set("shared_lng", lng)
+            navController.currentBackStackEntry?.savedStateHandle?.set("shared_radius", radius)
+            navController.currentBackStackEntry?.savedStateHandle?.set("shared_category", category)
+
+            navController.navigate(Screen.AddAlarm.route) {
+                launchSingleTop = true
+            }
+            // Clear the intent data so it doesn't trigger again on rotation
+            intent.data = null
         }
     }
 }

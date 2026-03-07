@@ -37,6 +37,16 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
+            <!-- Deep Link Intent Filter for Sharing Alarms -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="halo"
+                    android:host="alarm" />
+            </intent-filter>
         </activity>
 
         <service

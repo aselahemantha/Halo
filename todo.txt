@@ -9,6 +9,7 @@ Enter / Exit / Dwell Triggers — alert on leaving a zone or staying for X minut
 ETA / Distance Display — show distance to each alarm from current location
 Share Alarm via Deep Link / QR Code — share a location alarm with others
 Backup & Restore (Export/Import) — export alarms as JSON, import on another device
+
 Home Screen Widget — show active count, nearest alarm, or quick-add shortcut
 Map Marker Clustering — prevent overlapping markers when many alarms are nearby
 Haptic Feedback & Micro-Animations — subtle feedback on toggle/delete, Lottie empty states

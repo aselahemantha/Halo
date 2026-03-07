@@ -113,6 +113,9 @@ dependencies {
     // Gson for Backup & Restore
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // ZXing for QR Code generation
+    implementation("com.google.zxing:core:3.5.3")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

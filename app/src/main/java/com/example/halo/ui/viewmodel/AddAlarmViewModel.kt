@@ -105,6 +105,20 @@ class AddAlarmViewModel @Inject constructor(
             _editingAlarmId.value = alarmId
             loadAlarmData(alarmId)
         } else {
+            // Check for shared parameters from deep link
+            val sharedName = savedStateHandle.get<String>("shared_name")
+            val sharedLat = savedStateHandle.get<Double>("shared_lat")
+            val sharedLng = savedStateHandle.get<Double>("shared_lng")
+            val sharedRadius = savedStateHandle.get<Double>("shared_radius")
+            val sharedCat = savedStateHandle.get<String>("shared_category")
+
+            if (sharedName != null && sharedLat != null && sharedLng != null) {
+                _locationName.value = sharedName
+                _selectedLocation.value = LatLng(sharedLat, sharedLng)
+                _radius.value = sharedRadius ?: 800.0
+                _category.value = sharedCat ?: "General"
+            }
+
             viewModelScope.launch {
                 userPreferencesRepository.alarmSound.collect { (uri, title) ->
                     if (_alertSoundUri.value == null) { // Only set if not already set (e.g. rotation)
