@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.halo.R
 
 enum class AlarmFilter {
     ALL, ACTIVE, INACTIVE, PROXIMITY
@@ -33,11 +34,11 @@ class HomeViewModel @Inject constructor(
         initialValue = null
     )
 
-    private val _currentAddress = kotlinx.coroutines.flow.MutableStateFlow("Locating...")
+    private val _currentAddress = kotlinx.coroutines.flow.MutableStateFlow(context.getString(R.string.locating_address))
     val currentAddress: StateFlow<String> = _currentAddress.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = "Locating..."
+        initialValue = context.getString(R.string.locating_address)
     )
 
     private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
@@ -111,14 +112,14 @@ class HomeViewModel @Inject constructor(
     val batteryImpact: StateFlow<String> = alarms.map { alarmList ->
         val activeCount = alarmList.count { it.isEnabled }
         when {
-            activeCount < 3 -> "Low"
-            activeCount < 6 -> "Medium"
-            else -> "High"
+            activeCount < 3 -> context.getString(R.string.battery_impact_low)
+            activeCount < 6 -> context.getString(R.string.battery_impact_medium)
+            else -> context.getString(R.string.battery_impact_high)
         }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = "Low"
+        initialValue = context.getString(R.string.battery_impact_low)
     )
 
     init {
@@ -161,12 +162,12 @@ class HomeViewModel @Inject constructor(
                     _currentLocation.value = latLng
                     reverseGeocode(latLng)
                 } else {
-                    _currentAddress.value = "Location not found"
+                    _currentAddress.value = context.getString(R.string.location_not_found)
                 }
             }
         } catch (e: SecurityException) {
             e.printStackTrace()
-            _currentAddress.value = "Permission denied"
+            _currentAddress.value = context.getString(R.string.permission_denied)
         }
     }
 
@@ -178,23 +179,23 @@ class HomeViewModel @Inject constructor(
                     geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1) { addresses ->
                         if (addresses.isNotEmpty()) {
                             val address = addresses[0]
-                            _currentAddress.value = address.getAddressLine(0) ?: "Unknown Address"
+                            _currentAddress.value = address.getAddressLine(0) ?: context.getString(R.string.unknown_address)
                         } else {
-                            _currentAddress.value = "Unknown Address"
+                            _currentAddress.value = context.getString(R.string.unknown_address)
                         }
                     }
                 } else {
                     @Suppress("DEPRECATION")
                     val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
                     if (!addresses.isNullOrEmpty()) {
-                         _currentAddress.value = addresses[0].getAddressLine(0) ?: "Unknown Address"
+                         _currentAddress.value = addresses[0].getAddressLine(0) ?: context.getString(R.string.unknown_address)
                     } else {
-                        _currentAddress.value = "Unknown Address"
+                        _currentAddress.value = context.getString(R.string.unknown_address)
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                _currentAddress.value = "Error fetching address"
+                _currentAddress.value = context.getString(R.string.error_fetching_address)
             }
         }
     }

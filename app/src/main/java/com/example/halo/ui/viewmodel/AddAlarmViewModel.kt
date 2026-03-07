@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.halo.R
 
 @HiltViewModel
 class AddAlarmViewModel @Inject constructor(
@@ -65,7 +66,7 @@ class AddAlarmViewModel @Inject constructor(
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
     // Default to "Default" until loaded
-    private val _alertSound = MutableStateFlow("Default")
+    private val _alertSound = MutableStateFlow(context.getString(R.string.sound_default))
     val alertSound: StateFlow<String> = _alertSound.asStateFlow()
 
     private val _alertSoundUri = MutableStateFlow<String?>(null)
@@ -85,7 +86,7 @@ class AddAlarmViewModel @Inject constructor(
             val list = mutableListOf<Pair<String, String>>()
             
             // Add Default and Silent options manually if desired, or rely on system
-            list.add("" to "Silent")
+            list.add("" to context.getString(R.string.sound_silent))
             
             while (cursor.moveToNext()) {
                 val title = cursor.getString(android.media.RingtoneManager.TITLE_COLUMN_INDEX)
@@ -137,7 +138,7 @@ class AddAlarmViewModel @Inject constructor(
                 _selectedLocation.value = LatLng(alarm.latitude, alarm.longitude)
                 _radius.value = alarm.radius
                 _locationName.value = alarm.name
-                _alertSound.value = alarm.soundTitle ?: "Default"
+                _alertSound.value = alarm.soundTitle ?: context.getString(R.string.sound_default)
                 _alertSoundUri.value = alarm.soundUri
                 _category.value = alarm.category
                 _daysOfWeek.value = alarm.daysOfWeek
@@ -285,7 +286,7 @@ class AddAlarmViewModel @Inject constructor(
 
     fun saveAlarm(onSuccess: () -> Unit) {
         val location = _selectedLocation.value ?: return
-        val name = _locationName.value.ifBlank { "Location Alarm" }
+        val name = _locationName.value.ifBlank { context.getString(R.string.default_alarm_name) }
         
         viewModelScope.launch {
             val isEdit = _editingAlarmId.value != null

@@ -58,6 +58,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.FilterChip
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.ui.res.stringResource
+import com.example.halo.R
 import com.example.halo.ui.viewmodel.AlarmFilter
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -158,7 +160,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "Halo",
+                        stringResource(R.string.app_name_geo_alarm),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     ) 
@@ -170,14 +172,14 @@ fun HomeScreen(
                     IconButton(onClick = onNavigateToHistory) {
                         Icon(
                             imageVector = Icons.Default.List,
-                            contentDescription = "Alarm History",
+                            contentDescription = stringResource(R.string.cd_alarm_history),
                             modifier = Modifier.size(28.dp)
                         )
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.SettingsSuggest,
-                            contentDescription = "Settings",
+                            contentDescription = stringResource(R.string.cd_settings),
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -202,7 +204,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.AddAlarm,
-                    contentDescription = "Add Alarm",
+                    contentDescription = stringResource(R.string.cd_add_alarm),
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -221,7 +223,7 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "CURRENT STATUS",
+                    stringResource(R.string.current_status),
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.Gray,
                     fontWeight = FontWeight.SemiBold
@@ -248,7 +250,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "ACTIVE ALARMS",
+                        stringResource(R.string.active_alarms),
                         style = MaterialTheme.typography.labelLarge,
                         color = Color.Gray,
                         fontWeight = FontWeight.SemiBold
@@ -259,7 +261,7 @@ fun HomeScreen(
                         shape = CircleShape
                     ) {
                         Text(
-                            text = "$activeCount Active",
+                            text = stringResource(R.string.active_count, activeCount),
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
@@ -277,12 +279,12 @@ fun HomeScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { viewModel.updateSearchQuery(it) },
-                        placeholder = { Text("Search alarms...") },
+                        placeholder = { Text(stringResource(R.string.search_alarms)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         leadingIcon = {
-                            Icon(Icons.Default.List, contentDescription = "Search Icon") // Replace with Search icon if you have one, using List for now
+                            Icon(Icons.Default.List, contentDescription = stringResource(R.string.cd_search_icon)) // Replace with Search icon if you have one, using List for now
                         }
                     )
                 }
@@ -297,28 +299,28 @@ fun HomeScreen(
                             FilterChip(
                                 selected = selectedFilter == AlarmFilter.ALL,
                                 onClick = { viewModel.updateSelectedFilter(AlarmFilter.ALL) },
-                                label = { Text("All") }
+                                label = { Text(stringResource(R.string.filter_all)) }
                             )
                         }
                         item {
                             FilterChip(
                                 selected = selectedFilter == AlarmFilter.ACTIVE,
                                 onClick = { viewModel.updateSelectedFilter(AlarmFilter.ACTIVE) },
-                                label = { Text("Active") }
+                                label = { Text(stringResource(R.string.filter_active)) }
                             )
                         }
                         item {
                             FilterChip(
                                 selected = selectedFilter == AlarmFilter.INACTIVE,
                                 onClick = { viewModel.updateSelectedFilter(AlarmFilter.INACTIVE) },
-                                label = { Text("Inactive") }
+                                label = { Text(stringResource(R.string.filter_inactive)) }
                             )
                         }
                         item {
                             FilterChip(
                                 selected = selectedFilter == AlarmFilter.PROXIMITY,
                                 onClick = { viewModel.updateSelectedFilter(AlarmFilter.PROXIMITY) },
-                                label = { Text("Nearest") }
+                                label = { Text(stringResource(R.string.filter_nearest)) }
                             )
                         }
                     }
@@ -338,7 +340,7 @@ fun HomeScreen(
             if (alarms.isEmpty()) {
                 item {
                     Text(
-                        "No alarms created yet.",
+                        stringResource(R.string.no_alarms_created),
                         modifier = Modifier.padding(vertical = 24.dp),
                         color = Color.Gray
                     )
@@ -357,14 +359,14 @@ fun HomeScreen(
                     StatsCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.SsidChart,
-                        label = "Alarms this week",
+                        label = stringResource(R.string.alarms_this_week),
                         value = alarmsThisWeek.toString(),
                         color = MaterialTheme.colorScheme.primary
                     )
                     StatsCard(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.BatteryStd,
-                        label = "Battery impact",
+                        label = stringResource(R.string.battery_impact),
                         value = batteryImpact,
                         color = if (batteryImpact == "High") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )

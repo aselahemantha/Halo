@@ -61,6 +61,7 @@ import com.example.halo.data.repository.AppTheme
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -131,7 +132,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "Settings", 
+                        stringResource(R.string.settings_title), 
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
@@ -140,7 +141,7 @@ fun SettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Default.ArrowBack, stringResource(R.string.cd_back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = { Spacer(modifier = Modifier.width(48.dp)) }, // Center title trick
@@ -158,14 +159,14 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // 1. PERMISSIONS
-            SectionHeader("PERMISSIONS")
+            SectionHeader(stringResource(R.string.section_permissions))
             SettingsCard {
                 Column {
                     // Location Access
                     SettingsItem(
                         icon = Icons.Default.LocationOn,
-                        title = "Location Access",
-                        subtitle = "Always allowed for alerts",
+                        title = stringResource(R.string.perm_location),
+                        subtitle = stringResource(R.string.perm_location_desc),
                         trailing = {
                             StatusBadge(active = locationGranted)
                         },
@@ -181,8 +182,8 @@ fun SettingsScreen(
                     // Background Data
                     SettingsItem(
                         icon = Icons.Default.Sync,
-                        title = "Background Data",
-                        subtitle = "Update location in background",
+                        title = stringResource(R.string.perm_background),
+                        subtitle = stringResource(R.string.perm_background_desc),
                         trailing = {
                             val backgroundPermissionGranted by viewModel.backgroundPermissionGranted.collectAsState()
                             
@@ -196,7 +197,7 @@ fun SettingsScreen(
                                         }
                                         context.startActivity(intent)
                                         // Provide feedback?
-                                        android.widget.Toast.makeText(context, "Please select 'Allow all the time' for background location.", android.widget.Toast.LENGTH_LONG).show()
+                                        android.widget.Toast.makeText(context, context.getString(R.string.toast_background_allow_all), android.widget.Toast.LENGTH_LONG).show()
                                     } else {
                                         viewModel.toggleBackgroundLocation(it) 
                                     }
@@ -216,8 +217,8 @@ fun SettingsScreen(
                     // Alert Notifications
                     SettingsItem(
                         icon = Icons.Default.Notifications,
-                        title = "Alert Notifications",
-                        subtitle = "Critical priority enabled",
+                        title = stringResource(R.string.perm_notifications),
+                        subtitle = stringResource(R.string.perm_notifications_desc),
                         trailing = {
                             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
@@ -232,7 +233,7 @@ fun SettingsScreen(
             }
 
             // 2. GENERAL
-            SectionHeader("GENERAL")
+            SectionHeader(stringResource(R.string.section_general))
             SettingsCard {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(
@@ -250,9 +251,9 @@ fun SettingsScreen(
                                 Icon(Icons.Default.LocationOn, null, tint = MaterialTheme.colorScheme.primary)
                             }
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text("Default Alert Radius", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.default_radius_label), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
                         }
-                        Text("${defaultRadius.toInt()}m", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.radius_format_m, defaultRadius.toInt()), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -266,9 +267,9 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("100M", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("1KM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("2KM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.radius_100m), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.radius_1km), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.radius_2km), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 
@@ -276,8 +277,8 @@ fun SettingsScreen(
                 
                 SettingsItem(
                     icon = Icons.Default.BatteryStd,
-                    title = "Battery Optimization",
-                    subtitle = "Let the app run unoptimized for more accurate location triggers in real-time.",
+                    title = stringResource(R.string.battery_opt_label),
+                    subtitle = stringResource(R.string.battery_opt_desc),
                     trailing = {
                          Switch(
                             checked = batteryOptimized,
@@ -310,11 +311,11 @@ fun SettingsScreen(
 
                 SettingsItem(
                     icon = Icons.Default.DarkMode, 
-                    title = "App Theme",
+                    title = stringResource(R.string.app_theme_label),
                     subtitle = when(appTheme) {
-                        AppTheme.SYSTEM -> "System Default"
-                        AppTheme.LIGHT -> "Light"
-                        AppTheme.DARK -> "Dark"
+                        AppTheme.SYSTEM -> stringResource(R.string.theme_system)
+                        AppTheme.LIGHT -> stringResource(R.string.theme_light)
+                        AppTheme.DARK -> stringResource(R.string.theme_dark)
                     },
                     trailing = {
                          Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -335,7 +336,7 @@ fun SettingsScreen(
             }
 
             // 3. ALERT SOUNDS
-            SectionHeader("ALERT SOUNDS")
+            SectionHeader(stringResource(R.string.section_alert_sounds))
             SettingsCard {
                  val currentSound by viewModel.alarmSound.collectAsState()
                  var showSoundDialog by remember { mutableStateOf(false) }
@@ -343,11 +344,11 @@ fun SettingsScreen(
 
                  SettingsItem(
                     icon = Icons.Default.MusicNote,
-                    title = "Alarm Sound",
-                    subtitle = "Currently: ${currentSound.second}",
+                    title = stringResource(R.string.alarm_sound_label),
+                    subtitle = stringResource(R.string.alarm_sound_current, currentSound.second),
                     trailing = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Modify", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.modify_btn), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                         }
                     },
@@ -368,7 +369,7 @@ fun SettingsScreen(
             }
 
             // 4. DATA MANAGEMENT
-            SectionHeader("DATA MANAGEMENT")
+            SectionHeader(stringResource(R.string.section_data_management))
             SettingsCard {
                 Column {
                     val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -389,8 +390,8 @@ fun SettingsScreen(
 
                     SettingsItem(
                         icon = Icons.Default.Save,
-                        title = "Export Alarms",
-                        subtitle = "Backup your alarms to a JSON file",
+                        title = stringResource(R.string.export_alarms_label),
+                        subtitle = stringResource(R.string.export_alarms_desc),
                         trailing = {
                             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
@@ -405,8 +406,8 @@ fun SettingsScreen(
 
                     SettingsItem(
                         icon = Icons.Default.FileOpen,
-                        title = "Import Alarms",
-                        subtitle = "Restore alarms from a Backup file",
+                        title = stringResource(R.string.import_alarms_label),
+                        subtitle = stringResource(R.string.import_alarms_desc),
                         trailing = {
                             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
@@ -420,12 +421,12 @@ fun SettingsScreen(
             }
 
             // 5. SUPPORT
-            SectionHeader("SUPPORT")
+            SectionHeader(stringResource(R.string.section_support))
             SettingsCard {
                 Column {
                     SettingsItem(
                         icon = Icons.Default.QuestionAnswer, 
-                        title = "Help Center",
+                        title = stringResource(R.string.help_center_label),
                         subtitle = null,
                         iconBgColor = MaterialTheme.colorScheme.surfaceVariant,
                         iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -440,13 +441,13 @@ fun SettingsScreen(
                             onDismissRequest = { showHelpDialog = false },
                             title = {
                                 Text(
-                                    text = "Help Center & Privacy",
+                                    text = stringResource(R.string.help_center_dialog_title),
                                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                                 )
                             },
                             text = {
                                 Text(
-                                    text = "The purpose of this app is to provide location-based alarms. \n\nThe access permissions requested (Location, Notification) are strictly necessary for the core functionality of triggering alarms when you reach your destination. \n\nWe do not use, store, or share your personal information for any other purpose.",
+                                    text = stringResource(R.string.help_center_dialog_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -455,7 +456,7 @@ fun SettingsScreen(
                                 TextButton(
                                     onClick = { showHelpDialog = false }
                                 ) {
-                                    Text("Got it", fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.got_it_btn), fontWeight = FontWeight.Bold)
                                 }
                             },
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -466,12 +467,12 @@ fun SettingsScreen(
                     SettingsDivider()
                     SettingsItem(
                         icon = Icons.Default.Info,
-                        title = "About App",
+                        title = stringResource(R.string.about_app_label),
                         subtitle = null,
                         iconBgColor = MaterialTheme.colorScheme.surfaceVariant,
                         iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         trailing = {
-                            Text("v1.0.0", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.app_version), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
                         onClick = onNavigateToWalkthrough 
                     )
@@ -495,14 +496,14 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Reset All Settings",
+                    stringResource(R.string.reset_all_settings),
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { /* Reset Logic */ }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "MADE WITH PRECISION IN SRI LANKA \uD83E\uDD0D",
+                    stringResource(R.string.made_in_sri_lanka),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 2.sp

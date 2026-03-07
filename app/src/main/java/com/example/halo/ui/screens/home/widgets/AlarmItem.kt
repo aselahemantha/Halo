@@ -49,6 +49,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.halo.R
 import com.example.halo.domain.model.Alarm
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -191,7 +193,7 @@ fun AlarmItem(
                                     )
                                 }
                                 Text(
-                                    text = if (alarm.isEnabled) "Arriving within ${alarm.radius.toInt()}m" else "Disabled",
+                                    text = if (alarm.isEnabled) stringResource(R.string.status_arriving_within, alarm.radius.toInt()) else stringResource(R.string.status_disabled),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Gray
                                 )
@@ -203,7 +205,7 @@ fun AlarmItem(
                         IconButton(onClick = onEdit) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Alarm",
+                                contentDescription = stringResource(R.string.cd_edit_alarm),
                                 tint = Color.Gray
                             )
                         }
@@ -233,17 +235,17 @@ fun AlarmItem(
                         val distanceStr = if (distanceMeters > 1000) {
                             String.format(java.util.Locale.US, "%.1f km", distanceMeters / 1000)
                         } else {
-                            "${distanceMeters.toInt()} m"
+                            stringResource(R.string.eta_m_format, distanceMeters.toInt())
                         }
                         
                         // Rough walking ETA (5 km/h = ~83 m/min)
                         val etaMinutes = (distanceMeters / 83.33f).toInt()
                         val etaStr = if (etaMinutes > 60) {
-                            "${etaMinutes / 60}h ${etaMinutes % 60}m"
+                            stringResource(R.string.eta_hours_mins, etaMinutes / 60, etaMinutes % 60)
                         } else if (etaMinutes > 0) {
-                            "${etaMinutes}m"
+                            stringResource(R.string.eta_mins, etaMinutes)
                         } else {
-                            "< 1m"
+                            stringResource(R.string.eta_less_than_min)
                         }
 
                         Box(
@@ -252,7 +254,7 @@ fun AlarmItem(
                                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
                             Text(
-                                text = "$distanceStr • ~$etaStr walk",
+                                text = stringResource(R.string.eta_walk_format, distanceStr, etaStr),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -273,7 +275,7 @@ fun AlarmItem(
                     onDismissRequest = { showShareDialog = false },
                     title = {
                         Text(
-                            text = "Share Alarm",
+                            text = stringResource(R.string.share_alarm_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -284,7 +286,7 @@ fun AlarmItem(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                "Scan this QR code with another device to share the alarm location details.",
+                                stringResource(R.string.share_alarm_desc),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(bottom = 16.dp),
@@ -293,7 +295,7 @@ fun AlarmItem(
                             if (qrBitmap != null) {
                                 Image(
                                     bitmap = qrBitmap,
-                                    contentDescription = "QR Code",
+                                    contentDescription = stringResource(R.string.cd_qr_code),
                                     modifier = Modifier
                                         .size(200.dp)
                                         .background(Color.White, RoundedCornerShape(8.dp))
@@ -306,17 +308,17 @@ fun AlarmItem(
                         TextButton(
                             onClick = {
                                 clipboardManager.setText(AnnotatedString(shareLink))
-                                android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.toast_link_copied), android.widget.Toast.LENGTH_SHORT).show()
                             }
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Copy Link", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.copy_link_btn), fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showShareDialog = false }) {
-                            Text("Close", color = Color.Gray)
+                            Text(stringResource(R.string.close_btn), color = Color.Gray)
                         }
                     },
                     containerColor = MaterialTheme.colorScheme.surface,

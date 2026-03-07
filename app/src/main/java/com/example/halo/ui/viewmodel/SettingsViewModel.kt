@@ -21,6 +21,7 @@ import com.example.halo.data.repository.UserPreferencesRepository
 import com.example.halo.domain.repository.AlarmRepository
 import com.example.halo.data.repository.AppTheme
 import kotlinx.coroutines.flow.first
+import com.example.halo.R
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -40,7 +41,7 @@ class SettingsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = "" to "Default"
+            initialValue = "" to context.getString(R.string.sound_default)
         )
 
     private val _availableRingtones = MutableStateFlow<List<Pair<String, String>>>(emptyList())
@@ -125,7 +126,7 @@ class SettingsViewModel @Inject constructor(
             val list = mutableListOf<Pair<String, String>>()
             
             // Add Default and Silent options manually if desired, or rely on system
-            list.add("" to "Silent")
+            list.add("" to context.getString(R.string.sound_silent))
             
             while (cursor.moveToNext()) {
                 val title = cursor.getString(android.media.RingtoneManager.TITLE_COLUMN_INDEX)
@@ -155,12 +156,12 @@ class SettingsViewModel @Inject constructor(
                 }
                 
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    android.widget.Toast.makeText(context, "Alarms exported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.toast_export_success), android.widget.Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    android.widget.Toast.makeText(context, "Failed to export alarms", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.toast_export_fail), android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -181,13 +182,13 @@ class SettingsViewModel @Inject constructor(
                         alarmRepository.insertAlarm(alarm.copy(id = 0))
                     }
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        android.widget.Toast.makeText(context, "Alarms imported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                        android.widget.Toast.makeText(context, context.getString(R.string.toast_import_success), android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    android.widget.Toast.makeText(context, "Failed to import alarms", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, context.getString(R.string.toast_import_fail), android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }

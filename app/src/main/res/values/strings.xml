@@ -7,6 +7,154 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <!-- HomeScreen Strings -->
+    <string name="app_name_geo_alarm">Halo - Geo Alarm</string>
+    <string name="cd_alarm_history">Alarm History</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_add_alarm">Add Alarm</string>
+    <string name="current_status">CURRENT STATUS</string>
+    <string name="active_alarms">ACTIVE ALARMS</string>
+    <string name="active_count">%1$d Active</string>
+    <string name="search_alarms">Search alarms...</string>
+    <string name="cd_search_icon">Search Icon</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_inactive">Inactive</string>
+    <string name="filter_nearest">Nearest</string>
+    <string name="no_alarms_created">No alarms created yet.</string>
+    <string name="alarms_this_week">Alarms this week</string>
+    <string name="battery_impact">Battery impact</string>
+
+    <!-- AlarmItem Strings -->
+    <string name="status_arriving_within">Arriving within %1$d m</string>
+    <string name="status_disabled">Disabled</string>
+    <string name="cd_edit_alarm">Edit Alarm</string>
+    <string name="eta_walk_format">%1$s • ~%2$s walk</string>
+    <string name="eta_km_format">%.1f km</string>
+    <string name="eta_m_format">%1$d m</string>
+    <string name="eta_hours_mins">%1$dh %2$dm</string>
+    <string name="eta_mins">%1$dm</string>
+    <string name="eta_less_than_min">&lt; 1m</string>
+    <string name="share_alarm_title">Share Alarm</string>
+    <string name="share_alarm_desc">Scan this QR code with another device to share the alarm location details.</string>
+    <string name="cd_qr_code">QR Code</string>
+    <string name="copy_link_btn">Copy Link</string>
+    <string name="close_btn">Close</string>
+    <string name="toast_link_copied">Link copied to clipboard</string>
+
+    <!-- Generic Strings -->
+    <string name="cd_back">Back</string>
+    <string name="ok_btn">OK</string>
+    <string name="cancel_btn">Cancel</string>
+
+    <!-- AddLocationAlarmScreen Strings -->
+    <string name="cd_selected_location">Selected Location</string>
+    <string name="edit_alarm_title">Edit Alarm</string>
+    <string name="set_new_alarm_title">Set New Alarm</string>
+    <string name="cd_search">Search</string>
+    <string name="search_location_hint">Search for a location</string>
+    <string name="cd_clear">Clear</string>
+    <string name="cd_my_location">My Location</string>
+    <string name="cd_zoom_in">Zoom In</string>
+    <string name="cd_zoom_out">Zoom Out</string>
+    <string name="alarm_details_title">Alarm Details</string>
+    <string name="alarm_details_desc">Configure how the alarm triggers</string>
+    <string name="location_name_label">Location Name</string>
+    <string name="location_name_hint">e.g. Blue Bottle Coffee</string>
+    <string name="category_label">Category</string>
+    <string name="cat_general">General</string>
+    <string name="cat_work">Work</string>
+    <string name="cat_home">Home</string>
+    <string name="cat_travel">Travel</string>
+    <string name="cat_store">Store</string>
+    <string name="geofence_radius_label">Geofence Radius</string>
+    <string name="radius_format_m">%1$dm</string>
+    <string name="radius_100m">100M</string>
+    <string name="radius_2_5km">2.5KM</string>
+    <string name="radius_1km">1KM</string>
+    <string name="radius_2km">2KM</string>
+    <string name="radius_5km">5KM</string>
+    <string name="trigger_label">Trigger</string>
+    <string name="trigger_enter">Arrive</string>
+    <string name="trigger_exit">Leave</string>
+    <string name="trigger_dwell">Stay</string>
+    <string name="dwell_time_label">Dwell Time</string>
+    <string name="dwell_time_format">%1$d min</string>
+    <string name="schedule_label">Schedule</string>
+    <string name="time_not_set">Not Set</string>
+    <string name="time_format">%1$02d:%2$02d %3$s</string>
+    <string name="start_time_label">Start Time</string>
+    <string name="end_time_label">End Time</string>
+    <string name="alert_sound_label">Alert Sound</string>
+    <string name="update_alarm_btn">Update Alarm</string>
+    <string name="save_alarm_btn">Save Alarm</string>
+
+    <!-- SettingsScreen Strings -->
+    <string name="settings_title">Settings</string>
+    <string name="section_permissions">PERMISSIONS</string>
+    <string name="perm_location">Location Access</string>
+    <string name="perm_location_desc">Always allowed for alerts</string>
+    <string name="perm_background">Background Data</string>
+    <string name="perm_background_desc">Update location in background</string>
+    <string name="toast_background_allow_all">"Please select 'Allow all the time' for background location."</string>
+    <string name="perm_notifications">Alert Notifications</string>
+    <string name="perm_notifications_desc">Critical priority enabled</string>
+    <string name="section_general">GENERAL</string>
+    <string name="default_radius_label">Default Alert Radius</string>
+    <string name="battery_opt_label">Battery Optimization</string>
+    <string name="battery_opt_desc">Let the app run unoptimized for more accurate location triggers in real-time.</string>
+    <string name="app_theme_label">App Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="section_alert_sounds">ALERT SOUNDS</string>
+    <string name="alarm_sound_label">Alarm Sound</string>
+    <string name="alarm_sound_current">Currently: %1$s</string>
+    <string name="modify_btn">Modify</string>
+    <string name="section_data_management">DATA MANAGEMENT</string>
+    <string name="export_alarms_label">Export Alarms</string>
+    <string name="export_alarms_desc">Backup your alarms to a JSON file</string>
+    <string name="import_alarms_label">Import Alarms</string>
+    <string name="import_alarms_desc">Restore alarms from a Backup file</string>
+    <string name="section_support">SUPPORT</string>
+    <string name="help_center_label">Help Center</string>
+    <string name="help_center_dialog_title">Help Center &amp; Privacy</string>
+    <string name="help_center_dialog_desc">The purpose of this app is to provide location-based alarms.\n\nThe access permissions requested (Location, Notification) are strictly necessary for the core functionality of triggering alarms when you reach your destination.\n\nWe do not use, store, or share your personal information for any other purpose.</string>
+    <string name="got_it_btn">Got it</string>
+    <string name="about_app_label">About App</string>
+    <string name="app_version">v1.0.0</string>
+    <string name="reset_all_settings">Reset All Settings</string>
+    <string name="made_in_sri_lanka">MADE WITH PRECISION IN SRI LANKA &amp;#x1F90D;</string>
+
+    <!-- Service and Widget Strings -->
+    <string name="notif_location_reached">Location Reached</string>
+    <string name="notif_destination_reached">Destination Reached</string>
+    <string name="notif_end_alarm">End Alarm</string>
+    <string name="notif_channel_name">Alarm Channel</string>
+    <string name="notif_channel_desc">Channel for Location Alarms</string>
+
+    <string name="widget_title">Halo Alarms</string>
+    <string name="widget_active_alarms">%1$d Active Alarms</string>
+    <string name="widget_loading">Loading...</string>
+    <string name="widget_add_alarm">+ Add Alarm</string>
+
+    <!-- ViewModel Strings -->
+    <string name="toast_export_success">Alarms exported successfully</string>
+    <string name="toast_export_fail">Failed to export alarms</string>
+    <string name="toast_import_success">Alarms imported successfully</string>
+    <string name="toast_import_fail">Failed to import alarms</string>
+    <string name="sound_default">Default</string>
+    <string name="sound_silent">Silent</string>
+    <string name="default_alarm_name">Location Alarm</string>
+    <string name="locating_address">Locating...</string>
+    <string name="location_not_found">Location not found</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="unknown_address">Unknown Address</string>
+    <string name="error_fetching_address">Error fetching address</string>
+    <string name="battery_impact_low">Low</string>
+    <string name="battery_impact_medium">Medium</string>
+    <string name="battery_impact_high">High</string>
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

@@ -139,7 +139,7 @@ class LocationForegroundService : Service() {
                 recentlyTriggeredAlarms.remove(alarm.id)
             }
 
-            val alarmName = alarm.name ?: "Location Reached"
+            val alarmName = alarm.name ?: getString(R.string.notif_location_reached)
 
             // Full Screen Intent
             val fullScreenIntent = Intent(this@LocationForegroundService, MainActivity::class.java).apply {
@@ -165,14 +165,14 @@ class LocationForegroundService : Service() {
             )
 
             val notification = NotificationCompat.Builder(this@LocationForegroundService, CHANNEL_ID)
-                .setContentTitle("Destination Reached")
+                .setContentTitle(getString(R.string.notif_destination_reached))
                 .setContentText(alarmName)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(pendingIntent, true)
                 .setAutoCancel(true)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "End Alarm", stopPendingIntent)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notif_end_alarm), stopPendingIntent)
                 .build()
 
             startForeground(NOTIFICATION_ID, notification)
@@ -328,10 +328,10 @@ class LocationForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Alarm Channel",
+                getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Channel for Location Alarms"
+                description = getString(R.string.notif_channel_desc)
                 // setSound, vibrationPattern etc
             }
             notificationManager.createNotificationChannel(channel)

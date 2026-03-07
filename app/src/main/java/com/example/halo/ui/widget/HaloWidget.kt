@@ -26,6 +26,7 @@ import androidx.glance.layout.width
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import com.example.halo.data.local.AlarmDatabase
+import com.example.halo.R
 import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.LaunchedEffect
@@ -76,7 +77,7 @@ class HaloWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Halo Alarms",
+                    text = context.getString(R.string.widget_title),
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
                         color = ColorProvider(Color(0xFF1976D2)) // Darker blue typography
@@ -87,14 +88,14 @@ class HaloWidget : GlanceAppWidget() {
                 
                 if (activeAlarmCount.value != null) {
                     Text(
-                        text = "${activeAlarmCount.value} Active Alarms",
+                        text = context.getString(R.string.widget_active_alarms, activeAlarmCount.value),
                         style = TextStyle(
                             color = ColorProvider(Color.Black)
                         )
                     )
                 } else {
                     Text(
-                        text = "Loading...",
+                        text = context.getString(R.string.widget_loading),
                         style = TextStyle(
                             color = ColorProvider(Color.Gray)
                         )
@@ -104,7 +105,7 @@ class HaloWidget : GlanceAppWidget() {
                 Spacer(modifier = GlanceModifier.height(16.dp))
 
                 Button(
-                    text = "+ Add Alarm",
+                    text = context.getString(R.string.widget_add_alarm),
                     onClick = actionStartActivity(launchIntent)
                 )
             }
