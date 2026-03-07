@@ -329,6 +329,7 @@ fun HomeScreen(
             items(alarms) { alarm ->
                 AlarmItem(
                     alarm = alarm,
+                    currentLocation = currentLocation,
                     onToggle = { isEnabled -> viewModel.toggleAlarm(alarm, isEnabled) },
                     onEdit = { onNavigateToEditAlarm(alarm.id) },
                     onDelete = { viewModel.deleteAlarm(alarm) }

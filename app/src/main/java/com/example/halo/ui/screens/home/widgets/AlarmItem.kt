@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,9 +43,10 @@ import com.example.halo.domain.model.Alarm
 @Composable
 fun AlarmItem(
     alarm: Alarm,
+    currentLocation: com.google.android.gms.maps.model.LatLng?,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
@@ -105,70 +107,113 @@ fun AlarmItem(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), // Flat look from design
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Icon
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .size(48.dp)
-                            .background(iconColor, RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(icon, contentDescription = null, tint = iconTint)
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = alarm.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Surface(
-                                color = iconColor.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(4.dp),
-                                modifier = Modifier.padding(end = 8.dp)
-                            ) {
+                        // Icon
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(iconColor, RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(icon, contentDescription = null, tint = iconTint)
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = alarm.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                androidx.compose.material3.Surface(
+                                    color = iconColor.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(4.dp),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text(
+                                        text = alarm.category,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = iconTint,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    )
+                                }
                                 Text(
-                                    text = alarm.category,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = iconTint,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    text = if (alarm.isEnabled) "Arriving within ${alarm.radius.toInt()}m" else "Disabled",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray
                                 )
                             }
-                            Text(
-                                text = if (alarm.isEnabled) "Arriving within ${alarm.radius.toInt()}m" else "Disabled",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
+                        }
+                        
+                        IconButton(onClick = onEdit) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Alarm",
+                                tint = Color.Gray
                             )
                         }
-                    }
-                    
-                    IconButton(onClick = onEdit) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Alarm",
-                            tint = Color.Gray
+
+                        Switch(
+                            checked = alarm.isEnabled,
+                            onCheckedChange = onToggle,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                uncheckedThumbColor = Color.White,
+                                uncheckedTrackColor = Color.LightGray.copy(alpha = 0.4f),
+                                uncheckedBorderColor = Color.Transparent
+                            )
                         )
                     }
 
-                    Switch(
-                        checked = alarm.isEnabled,
-                        onCheckedChange = onToggle,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color.LightGray.copy(alpha = 0.4f),
-                            uncheckedBorderColor = Color.Transparent
+                    // ETA Row below the main row
+                    if (currentLocation != null) {
+                        val results = FloatArray(1)
+                        android.location.Location.distanceBetween(
+                            currentLocation.latitude, currentLocation.longitude,
+                            alarm.latitude, alarm.longitude,
+                            results
                         )
-                    )
+                        val distanceMeters = results[0]
+                        val distanceStr = if (distanceMeters > 1000) {
+                            String.format(java.util.Locale.US, "%.1f km", distanceMeters / 1000)
+                        } else {
+                            "${distanceMeters.toInt()} m"
+                        }
+                        
+                        // Rough walking ETA (5 km/h = ~83 m/min)
+                        val etaMinutes = (distanceMeters / 83.33f).toInt()
+                        val etaStr = if (etaMinutes > 60) {
+                            "${etaMinutes / 60}h ${etaMinutes % 60}m"
+                        } else if (etaMinutes > 0) {
+                            "${etaMinutes}m"
+                        } else {
+                            "< 1m"
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = "$distanceStr • ~$etaStr walk",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
