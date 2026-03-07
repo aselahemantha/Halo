@@ -55,6 +55,10 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.lazy.LazyRow
+import com.example.halo.ui.viewmodel.AlarmFilter
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -93,6 +97,8 @@ fun HomeScreen(
     val activeCount = alarms.count { it.isEnabled }
     val currentLocation by viewModel.currentLocation.collectAsState()
     val currentAddress by viewModel.currentAddress.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
 
     // Permission Handling
     var showPermissionDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -259,6 +265,62 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         )
+                    }
+                }
+            }
+
+            val showSearchAndFilter = alarms.isNotEmpty() || searchQuery.isNotEmpty() || selectedFilter != com.example.halo.ui.viewmodel.AlarmFilter.ALL
+            
+            if (showSearchAndFilter) {
+                // Search Bar
+                item {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.updateSearchQuery(it) },
+                        placeholder = { Text("Search alarms...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(Icons.Default.List, contentDescription = "Search Icon") // Replace with Search icon if you have one, using List for now
+                        }
+                    )
+                }
+
+                // Filter Chips
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            FilterChip(
+                                selected = selectedFilter == AlarmFilter.ALL,
+                                onClick = { viewModel.updateSelectedFilter(AlarmFilter.ALL) },
+                                label = { Text("All") }
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                selected = selectedFilter == AlarmFilter.ACTIVE,
+                                onClick = { viewModel.updateSelectedFilter(AlarmFilter.ACTIVE) },
+                                label = { Text("Active") }
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                selected = selectedFilter == AlarmFilter.INACTIVE,
+                                onClick = { viewModel.updateSelectedFilter(AlarmFilter.INACTIVE) },
+                                label = { Text("Inactive") }
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                selected = selectedFilter == AlarmFilter.PROXIMITY,
+                                onClick = { viewModel.updateSelectedFilter(AlarmFilter.PROXIMITY) },
+                                label = { Text("Nearest") }
+                            )
+                        }
                     }
                 }
             }

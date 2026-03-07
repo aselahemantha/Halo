@@ -9,9 +9,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+enum class AlarmFilter {
+    ALL, ACTIVE, INACTIVE, PROXIMITY
+}
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -35,12 +40,64 @@ class HomeViewModel @Inject constructor(
         initialValue = "Locating..."
     )
 
-    val alarms: StateFlow<List<Alarm>> = repository.getAllAlarms()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+
+    private val _selectedFilter = kotlinx.coroutines.flow.MutableStateFlow(AlarmFilter.ALL)
+    val selectedFilter: StateFlow<AlarmFilter> = _selectedFilter.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = AlarmFilter.ALL
+    )
+
+    val alarms: StateFlow<List<Alarm>> = combine(
+        repository.getAllAlarms(),
+        _searchQuery,
+        _selectedFilter,
+        _currentLocation
+    ) { allAlarms, query, filter, location ->
+        var filteredList = allAlarms
+
+        // 1. Search filter
+        if (query.isNotBlank()) {
+            filteredList = filteredList.filter { 
+                it.name.contains(query, ignoreCase = true) 
+            }
+        }
+
+        // 2. Type filter
+        filteredList = when (filter) {
+            AlarmFilter.ACTIVE -> filteredList.filter { it.isEnabled }
+            AlarmFilter.INACTIVE -> filteredList.filter { !it.isEnabled }
+            else -> filteredList
+        }
+
+        // 3. Proximity Sort
+        if (filter == AlarmFilter.PROXIMITY && location != null) {
+            filteredList = filteredList.sortedBy { alarm ->
+                val results = FloatArray(1)
+                android.location.Location.distanceBetween(
+                    location.latitude, location.longitude,
+                    alarm.latitude, alarm.longitude,
+                    results
+                )
+                results[0]
+            }
+        } else {
+            // Default sort by newest if no proximity is requested
+            filteredList = filteredList.sortedByDescending { it.createdDate }
+        }
+
+        filteredList
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     val alarmsThisWeek: StateFlow<Int> = alarms.map { alarmList ->
         val oneWeekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000
@@ -66,6 +123,14 @@ class HomeViewModel @Inject constructor(
 
     init {
         getCurrentLocation()
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun updateSelectedFilter(filter: AlarmFilter) {
+        _selectedFilter.value = filter
     }
 
     fun toggleAlarm(alarm: Alarm, isEnabled: Boolean) {
