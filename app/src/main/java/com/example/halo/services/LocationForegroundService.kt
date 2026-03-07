@@ -14,17 +14,21 @@ import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.halo.MainActivity
 import com.example.halo.R
+import com.example.halo.domain.model.Alarm
 import com.example.halo.domain.repository.AlarmRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -40,6 +44,7 @@ class LocationForegroundService : Service() {
     private lateinit var notificationManager: NotificationManager
     private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
+    private val recentlyTriggeredAlarms = mutableSetOf<Long>()
 
     override fun onCreate() {
         super.onCreate()
@@ -52,7 +57,12 @@ class LocationForegroundService : Service() {
             ACTION_TRIGGER_ALARM -> {
                 val alarmId = intent.getStringExtra(EXTRA_ALARM_ID)
                 if (alarmId != null) {
-                    triggerAlarm(alarmId)
+                    serviceScope.launch {
+                        val alarm = alarmRepository.getAlarmById(alarmId.toLongOrNull() ?: -1)
+                        if (alarm != null) {
+                            triggerAlarm(alarm)
+                        }
+                    }
                 }
             }
             ACTION_STOP_ALARM -> {
@@ -80,16 +90,62 @@ class LocationForegroundService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun triggerAlarm(alarmId: String) {
+    private fun triggerAlarm(alarm: Alarm) {
+        // Prevent re-triggering within cooldown
+        if (recentlyTriggeredAlarms.contains(alarm.id)) {
+            Log.d("LocationService", "Alarm ${alarm.name} recently triggered. Skipping.")
+            return
+        }
+
+        // Schedule Logic Check
+        val calendar = Calendar.getInstance()
+        val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+        val currentMinutesSinceMidnight = currentHour * 60 + currentMinute
+
+        // 1. Check Day of Week
+        if (alarm.daysOfWeek.isNotEmpty() && !alarm.daysOfWeek.contains(currentDayOfWeek)) {
+            Log.d("LocationService", "Alarm ${alarm.name} schedule mismatch (Day of week). Skipping.")
+            return
+        }
+
+        // 2. Check Time Window
+        if (alarm.startTimeHour != null && alarm.startTimeMinute != null && alarm.endTimeHour != null && alarm.endTimeMinute != null) {
+            val startMinutesSinceMidnight = alarm.startTimeHour * 60 + alarm.startTimeMinute
+            val endMinutesSinceMidnight = alarm.endTimeHour * 60 + alarm.endTimeMinute
+            
+            val isWithinWindow = if (startMinutesSinceMidnight <= endMinutesSinceMidnight) {
+                // Normal window (e.g., 8:00 AM to 5:00 PM)
+                currentMinutesSinceMidnight in startMinutesSinceMidnight..endMinutesSinceMidnight
+            } else {
+                // Overnight window (e.g., 10:00 PM to 6:00 AM)
+                currentMinutesSinceMidnight >= startMinutesSinceMidnight || currentMinutesSinceMidnight <= endMinutesSinceMidnight
+            }
+
+            if (!isWithinWindow) {
+                Log.d("LocationService", "Alarm ${alarm.name} schedule mismatch (Time window). Skipping.")
+                return
+            }
+        }
+
+        // --- Execute Trigger ---
+
+        Log.d("LocationService", "Triggering alarm: ${alarm.name}")
         serviceScope.launch {
-            val alarm = alarmRepository.getAlarmById(alarmId.toLongOrNull() ?: -1)
-            val alarmName = alarm?.name ?: "Location Reached"
+            recentlyTriggeredAlarms.add(alarm.id)
+            launch {
+                delay(ALARM_COOLDOWN_MILLIS)
+                recentlyTriggeredAlarms.remove(alarm.id)
+            }
+
+            val alarmName = alarm.name ?: "Location Reached"
 
             // Full Screen Intent
             val fullScreenIntent = Intent(this@LocationForegroundService, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 putExtra("navigate_to", "trigger_screen") // Simple way to tell UI to show trigger
-                putExtra("alarm_id", alarmId)
+                putExtra("alarm_id", alarm.id.toString())
             }
             val pendingIntent = PendingIntent.getActivity(
                 this@LocationForegroundService, 
@@ -287,6 +343,7 @@ class LocationForegroundService : Service() {
     }
 
     companion object {
+        const val ALARM_COOLDOWN_MILLIS = 300_000L // 5 minutes
         const val ACTION_TRIGGER_ALARM = "ACTION_TRIGGER_ALARM"
         const val ACTION_STOP_ALARM = "ACTION_STOP_ALARM"
         const val ACTION_SNOOZE = "ACTION_SNOOZE"

@@ -15,5 +15,10 @@ data class AlarmEntity(
     val createdDate: Long = System.currentTimeMillis(),
     val soundUri: String? = null,
     val soundTitle: String? = null,
-    val category: String = "General"
+    val category: String = "General",
+    val daysOfWeek: String = "", // Comma-separated list of integers
+    val startTimeHour: Int? = null,
+    val startTimeMinute: Int? = null,
+    val endTimeHour: Int? = null,
+    val endTimeMinute: Int? = null
 )

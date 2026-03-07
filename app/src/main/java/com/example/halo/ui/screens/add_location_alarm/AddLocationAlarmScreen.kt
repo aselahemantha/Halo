@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,8 +53,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -102,6 +110,11 @@ fun AddLocationAlarmScreen(
     val searchSuggestions by viewModel.searchSuggestions.collectAsState()
     val editingAlarmId by viewModel.editingAlarmId.collectAsState()
     val category by viewModel.category.collectAsState()
+    val daysOfWeek by viewModel.daysOfWeek.collectAsState()
+    val startTimeHour by viewModel.startTimeHour.collectAsState()
+    val startTimeMinute by viewModel.startTimeMinute.collectAsState()
+    val endTimeHour by viewModel.endTimeHour.collectAsState()
+    val endTimeMinute by viewModel.endTimeMinute.collectAsState()
     val isEditMode = editingAlarmId != null
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -303,18 +316,21 @@ fun AddLocationAlarmScreen(
         }
 
         // 4. Bottom Sheet (Alarm Details)
-        // Using a draggable-looking surface anchored to bottom
+        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
         Surface(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .heightIn(max = screenHeight * 0.60f),
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp)
             ) {
                 // Drag Handle
                 Box(
@@ -413,6 +429,140 @@ fun AddLocationAlarmScreen(
                     Text("5KM", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                 }
                 
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // --- Schedule Section ---
+                Text("Schedule", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Day Picker
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val days = listOf(
+                        java.util.Calendar.SUNDAY to "S",
+                        java.util.Calendar.MONDAY to "M",
+                        java.util.Calendar.TUESDAY to "T",
+                        java.util.Calendar.WEDNESDAY to "W",
+                        java.util.Calendar.THURSDAY to "T",
+                        java.util.Calendar.FRIDAY to "F",
+                        java.util.Calendar.SATURDAY to "S"
+                    )
+                    days.forEach { (calendarDay, label) ->
+                        val isSelected = daysOfWeek.contains(calendarDay)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .clickable { viewModel.toggleDayOfWeek(calendarDay) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Time Limits
+                var showStartTimePicker by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                var showEndTimePicker by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+                fun formatTime(hour: Int?, minute: Int?): String {
+                    if (hour == null || minute == null) return "Not Set"
+                    val isPm = hour >= 12
+                    val displayHour = if (hour == 0 || hour == 12) 12 else hour % 12
+                    val period = if (isPm) "PM" else "AM"
+                    return String.format("%02d:%02d %s", displayHour, minute, period)
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Start Time Button
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = { showStartTimePicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Start Time", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                            Text(formatTime(startTimeHour, startTimeMinute), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+
+                    // End Time Button
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = { showEndTimePicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("End Time", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                            Text(formatTime(endTimeHour, endTimeMinute), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+
+                // Start Time Dialog
+                if (showStartTimePicker) {
+                    val timePickerState = rememberTimePickerState(
+                        initialHour = startTimeHour ?: 8,
+                        initialMinute = startTimeMinute ?: 0,
+                        is24Hour = false
+                    )
+                    AlertDialog(
+                        onDismissRequest = { showStartTimePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.updateTimeWindow(
+                                    timePickerState.hour, timePickerState.minute,
+                                    endTimeHour, endTimeMinute
+                                )
+                                showStartTimePicker = false
+                            }) { Text("OK") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showStartTimePicker = false }) { Text("Cancel") }
+                        },
+                        text = { TimePicker(state = timePickerState) }
+                    )
+                }
+
+                // End Time Dialog
+                if (showEndTimePicker) {
+                    val timePickerState = rememberTimePickerState(
+                        initialHour = endTimeHour ?: 17,
+                        initialMinute = endTimeMinute ?: 0,
+                        is24Hour = false
+                    )
+                    AlertDialog(
+                        onDismissRequest = { showEndTimePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.updateTimeWindow(
+                                    startTimeHour, startTimeMinute,
+                                    timePickerState.hour, timePickerState.minute
+                                )
+                                showEndTimePicker = false
+                            }) { Text("OK") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showEndTimePicker = false }) { Text("Cancel") }
+                        },
+                        text = { TimePicker(state = timePickerState) }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 val availableRingtones by viewModel.availableRingtones.collectAsState()

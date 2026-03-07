@@ -40,6 +40,21 @@ class AddAlarmViewModel @Inject constructor(
     private val _category = MutableStateFlow("General")
     val category: StateFlow<String> = _category.asStateFlow()
 
+    private val _daysOfWeek = MutableStateFlow<List<Int>>(emptyList())
+    val daysOfWeek: StateFlow<List<Int>> = _daysOfWeek.asStateFlow()
+
+    private val _startTimeHour = MutableStateFlow<Int?>(null)
+    val startTimeHour: StateFlow<Int?> = _startTimeHour.asStateFlow()
+    
+    private val _startTimeMinute = MutableStateFlow<Int?>(null)
+    val startTimeMinute: StateFlow<Int?> = _startTimeMinute.asStateFlow()
+
+    private val _endTimeHour = MutableStateFlow<Int?>(null)
+    val endTimeHour: StateFlow<Int?> = _endTimeHour.asStateFlow()
+
+    private val _endTimeMinute = MutableStateFlow<Int?>(null)
+    val endTimeMinute: StateFlow<Int?> = _endTimeMinute.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
@@ -105,12 +120,34 @@ class AddAlarmViewModel @Inject constructor(
                 _alertSound.value = alarm.soundTitle ?: "Default"
                 _alertSoundUri.value = alarm.soundUri
                 _category.value = alarm.category
+                _daysOfWeek.value = alarm.daysOfWeek
+                _startTimeHour.value = alarm.startTimeHour
+                _startTimeMinute.value = alarm.startTimeMinute
+                _endTimeHour.value = alarm.endTimeHour
+                _endTimeMinute.value = alarm.endTimeMinute
             }
         }
     }
 
     fun updateCategory(newCategory: String) {
         _category.value = newCategory
+    }
+
+    fun toggleDayOfWeek(day: Int) {
+        val currentDays = _daysOfWeek.value.toMutableList()
+        if (currentDays.contains(day)) {
+            currentDays.remove(day)
+        } else {
+            currentDays.add(day)
+        }
+        _daysOfWeek.value = currentDays.sorted()
+    }
+
+    fun updateTimeWindow(startHour: Int?, startMinute: Int?, endHour: Int?, endMinute: Int?) {
+        _startTimeHour.value = startHour
+        _startTimeMinute.value = startMinute
+        _endTimeHour.value = endHour
+        _endTimeMinute.value = endMinute
     }
 
     fun updateLocation(latLng: LatLng) {
@@ -232,7 +269,12 @@ class AddAlarmViewModel @Inject constructor(
                 isEnabled = true,
                 soundUri = _alertSoundUri.value,
                 soundTitle = _alertSound.value,
-                category = _category.value
+                category = _category.value,
+                daysOfWeek = _daysOfWeek.value,
+                startTimeHour = _startTimeHour.value,
+                startTimeMinute = _startTimeMinute.value,
+                endTimeHour = _endTimeHour.value,
+                endTimeMinute = _endTimeMinute.value
             )
             
             if (isEdit) {

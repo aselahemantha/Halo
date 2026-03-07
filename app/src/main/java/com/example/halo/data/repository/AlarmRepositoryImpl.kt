@@ -66,7 +66,12 @@ class AlarmRepositoryImpl(
             createdDate = createdDate,
             soundUri = soundUri,
             soundTitle = soundTitle,
-            category = category
+            category = category,
+            daysOfWeek = if (daysOfWeek.isBlank()) emptyList() else daysOfWeek.split(",").map { it.toInt() },
+            startTimeHour = startTimeHour,
+            startTimeMinute = startTimeMinute,
+            endTimeHour = endTimeHour,
+            endTimeMinute = endTimeMinute
         )
     }
 
@@ -81,7 +86,12 @@ class AlarmRepositoryImpl(
             createdDate = createdDate,
             soundUri = soundUri,
             soundTitle = soundTitle,
-            category = category
+            category = category,
+            daysOfWeek = daysOfWeek.joinToString(","),
+            startTimeHour = startTimeHour,
+            startTimeMinute = startTimeMinute,
+            endTimeHour = endTimeHour,
+            endTimeMinute = endTimeMinute
         )
     }
 
