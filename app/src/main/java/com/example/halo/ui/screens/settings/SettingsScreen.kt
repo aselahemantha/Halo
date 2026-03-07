@@ -37,9 +37,10 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.QuestionAnswer
-import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -366,7 +367,59 @@ fun SettingsScreen(
                 }
             }
 
-            // 4. SUPPORT
+            // 4. DATA MANAGEMENT
+            SectionHeader("DATA MANAGEMENT")
+            SettingsCard {
+                Column {
+                    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")
+                    ) { uri ->
+                        if (uri != null) {
+                            viewModel.exportAlarms(context, uri)
+                        }
+                    }
+
+                    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+                    ) { uri ->
+                        if (uri != null) {
+                            viewModel.importAlarms(context, uri)
+                        }
+                    }
+
+                    SettingsItem(
+                        icon = Icons.Default.Save,
+                        title = "Export Alarms",
+                        subtitle = "Backup your alarms to a JSON file",
+                        trailing = {
+                            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                        iconBgColor = MaterialTheme.colorScheme.primaryContainer,
+                        iconColor = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            exportLauncher.launch("halo_alarms_backup.json")
+                        }
+                    )
+                    
+                    SettingsDivider()
+
+                    SettingsItem(
+                        icon = Icons.Default.FileOpen,
+                        title = "Import Alarms",
+                        subtitle = "Restore alarms from a Backup file",
+                        trailing = {
+                            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                        iconBgColor = MaterialTheme.colorScheme.primaryContainer,
+                        iconColor = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            importLauncher.launch(arrayOf("application/json", "*/*"))
+                        }
+                    )
+                }
+            }
+
+            // 5. SUPPORT
             SectionHeader("SUPPORT")
             SettingsCard {
                 Column {

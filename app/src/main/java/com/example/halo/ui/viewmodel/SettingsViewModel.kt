@@ -18,12 +18,15 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.halo.data.repository.UserPreferencesRepository
+import com.example.halo.domain.repository.AlarmRepository
 import com.example.halo.data.repository.AppTheme
+import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val alarmRepository: AlarmRepository
 ) : ViewModel() {
 
     val appTheme: StateFlow<AppTheme> = userPreferencesRepository.appTheme
@@ -137,6 +140,56 @@ class SettingsViewModel @Inject constructor(
             // But for a simple list, we can extract.
             
             _availableRingtones.value = list
+        }
+    }
+
+    fun exportAlarms(context: Context, uri: android.net.Uri) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                // Collect alarms from flow.
+                val alarms = alarmRepository.getAllAlarms().first()
+                val json = com.google.gson.Gson().toJson(alarms)
+                
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(json.toByteArray())
+                }
+                
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    android.widget.Toast.makeText(context, "Alarms exported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    android.widget.Toast.makeText(context, "Failed to export alarms", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun importAlarms(context: Context, uri: android.net.Uri) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val json = inputStream?.bufferedReader()?.use { it.readText() }
+                
+                if (json != null) {
+                    val listType = object : com.google.gson.reflect.TypeToken<List<com.example.halo.domain.model.Alarm>>() {}.type
+                    val alarms: List<com.example.halo.domain.model.Alarm> = com.google.gson.Gson().fromJson(json, listType)
+                    
+                    for (alarm in alarms) {
+                        // Ensure ID is 0 so it auto-generates a new ID to avoid conflict
+                        alarmRepository.insertAlarm(alarm.copy(id = 0))
+                    }
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        android.widget.Toast.makeText(context, "Alarms imported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    android.widget.Toast.makeText(context, "Failed to import alarms", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 }
