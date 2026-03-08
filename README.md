@@ -1,15 +1,21 @@
 # Halo - Location Alarm App
 
-Halo is a production-ready Android application that allows users to set location-based alarms. It uses Geofencing technology to trigger a full-screen alarm notification, sound, and vibration when the user enters a specified radius of a destination. The app is built with modern Android development practices, including Jetpack Compose and Material 3.
+Halo is a production-ready Android application that allows users to set location-based alarms. It uses Geofencing technology to trigger a full-screen alarm notification, sound, and vibration when the user interacts with a specified radius of a destination. Built with modern Android development practices like Jetpack Compose, Material 3, Hilt, and Room, Halo makes sure you never miss your stop.
 
 ## 📱 Features
 
--   **Location-Based Alarms**: Set alarms by dropping a pin on a map.
--   **Customizable Radius**: Adjust the trigger radius from 100m to 5km.
--   **Background Monitoring**: Reliable geofencing even when the app is closed.
--   **High-Priority Alerts**: Full-screen notification with sound and vibration to wake you up.
--   **Modern UI**: Beautiful Material 3 design with Dark Mode and Dynamic Color support.
--   **Location Management**: Enable/Disable alarms easily from the home screen.
+-   **Location-Based Alarms**: Set up precise alarms by dropping a pin on an interactive map.
+-   **Configurable Triggers**: Choose whether the alarm triggers when you **Arrive** (Enter), **Leave** (Exit), or **Stay** (Dwell) at a location.
+-   **Customizable Radius**: Adjust the trigger radius smoothly from 100m up to 5km.
+-   **Schedule & Repetition**: Set specific days of the week and time windows (e.g., only trigger between 8 AM - 5 PM) for each alarm to be active.
+-   **Home Screen Widget**: View active alarm count and quickly access the Add Alarm screen using the Jetpack Glance widget.
+-   **Backup & Restore**: Easily export your alarms to a JSON file and import them back on any device.
+-   **Share Alarm**: Share your alarm configuration with others via a generated QR code or a `halo://alarm` deep link.
+-   **Background Monitoring**: Reliable geofencing using Android Location Services, even when the app is closed.
+-   **Auto-Resume on Boot**: WorkManager ensures your active alarms are seamlessly re-registered after a device restart.
+-   **High-Priority Alerts**: Full-screen notifications with custom notification channels, sound, and vibration patterns to ensure you wake up.
+-   **Localization (i18n)**: Fully externalized string resources ready for multi-language support.
+-   **Modern UI**: Beautiful Jetpack Compose UI with Material 3, supporting light and dark themes.
 
 ## 🛠 Tech Stack
 
@@ -17,41 +23,41 @@ Halo is a production-ready Android application that allows users to set location
 -   **UI Toolkit**: [Jetpack Compose](https://developer.android.com/jetpack/compose) (Material 3)
 -   **Architecture**: MVVM (Model-View-ViewModel) + Clean Architecture principles
 -   **Dependency Injection**: [Hilt](https://dagger.dev/hilt/)
--   **Local Storage**: [Room Database](https://developer.android.com/training/data-storage/room)
+-   **Local Storage**: [Room Database](https://developer.android.com/training/data-storage/room) & Preferences DataStore
 -   **Maps & Location**:
     -   Google Maps SDK for Android
-    -   Google Play Services Location (Geofencing API)
+    -   Google Play Services Location (Geofencing API, FusedLocationProviderClient)
+-   **Background Processing**: WorkManager (for Boot Re-registration)
+-   **Widgets**: Jetpack Glance
 -   **Asynchronous Programming**: Coroutines & Flow
 -   **Permissions**: Accompanist Permissions
 
 ## 🏗 Architecture Overview
 
-## 🏗 Architecture Overview
-30: 
-31: The app follows the recommended **Modern Android Architecture** (MVVM) with a Unidirectional Data Flow (UDF).
-32: 
-33: ### 1. UI Layer (Presentation)
-34: -   **Single Activity**: `MainActivity` is the sole entry point, hosting a generic `NavHost`.
-35: -   **Jetpack Compose**: All UI is built declaratively.
-36: -   **ViewModels**: Maintain state using `StateFlow`. UI components observe these flows via `collectAsState` to react to changes automatically.
-37: -   **Developer Mode Map**: If no API key is present, the app automatically falls back to a specialized "Dev Mode" map to allow UI testing without Google Cloud billing.
-38: 
-39: ### 2. Domain & Logic Layer
-40: -   **GeofenceManager**: A wrapper around `GeofencingClient`. It handles the complexity of adding/removing OS-level geofences.
-41: -   **BroadcastReceiver**: `GeofenceBroadcastReceiver` listens for system intents when a user enters a monitored application. It acts as the bridge between the OS and the App's notification logic.
-42: -   **Use Cases**: (Future scalability) Encapsulate specific business rules.
-43: 
-44: ### 3. Data Layer
-45: -   **Repository Pattern**: `AlarmRepository` is the single source of truth. It coordinates between the local database and the geofencing system.
-46: -   **Room Database**: Persists alarm data (Location, Name, Radius, Active State).
-47: -   **DataStore**: Handles lightweight user preferences like "Dark Mode" settings.
-48: 
-49: ### 🔄 Key Data Flow: Alarm Trigger
-50: 1.  User adds alarm -> `ViewModel` saves to `Repository`.
-51: 2.  `Repository` saves to `Room` AND registers geofence via `GeofenceManager`.
-52: 3.  OS tracks location (even if app is killed).
-53: 4.  User enters radius -> OS fires `Intent`.
-54: 5.  `GeofenceBroadcastReceiver` wakes up -> Triggers Notification/Sound.
+The app follows the recommended **Modern Android Architecture** (MVVM) with a Unidirectional Data Flow (UDF).
+
+### 1. UI Layer (Presentation)
+-   **Single Activity**: `MainActivity` is the sole entry point, hosting a generic Jetpack Navigation `NavHost`.
+-   **Jetpack Compose**: All UI interfaces, including complex bottom sheets and settings screens, are built declaratively.
+-   **ViewModels**: Maintain robust state using `StateFlow`. UI components observe these flows to react to state changes automatically and handle process death using `SavedStateHandle`.
+-   **Glance Widget**: The widget UI (`HaloWidget`) and behavior are decoupled, observing the Room DB directly via an entry point logic.
+
+### 2. Domain & Logic Layer
+-   **GeofenceManager**: A strategic wrapper around `GeofencingClient`. It bridges the domain models directly into Android OS geofencing boundaries, managing enter, exit, and dwell transition types.
+-   **BroadcastReceiver**: `GeofenceBroadcastReceiver` listens for system intents when a user crosses a monitored spatial boundary. It delegates to the `LocationForegroundService` to surface alerts.
+
+### 3. Data Layer
+-   **Repository Pattern**: `AlarmRepository` acts as the single source of truth coordinating local database inputs and providing Kotlin Flows for reactive observation.
+-   **Room Database**: Persists complex alarm entities including coordinates, radii, triggers, and schedule structures.
+-   **Serialization**: GSON integration built-in to support exporting/importing Room data structures seamlessly.
+
+### 🔄 Key Data Flow: Alarm Trigger
+1.  User configures an alarm in the UI -> `ViewModel` passes data to `Repository`.
+2.  `Repository` saves the entity to `Room` AND registers the hardware-level geofence via `GeofenceManager`.
+3.  OS tracks location accurately via Google Play Services in the background.
+4.  User interacts with the radius (Enters/Exits/Stays) -> OS broadcasts a `GeofencingEvent` Intent.
+5.  `GeofenceBroadcastReceiver` wakes the app and triggers `LocationForegroundService`.
+6.  Service emits High-Priority Notification, launches a full-screen Intent, and plays sound.
 
 ## 🚀 Setup & Installation
 
@@ -78,14 +84,14 @@ Halo is a production-ready Android application that allows users to set location
 
     > **Note**: For Geofencing to work on an emulator, you must manually simulate location updates in the emulator settings (Extended Controls > Location).
 
-## ⚠️ Permissions
+## ⚠️ Permissions requirements
 
-The app requires the following permissions to function correctly:
--   **Location**: `ACCESS_FINE_LOCATION` and `ACCESS_BACKGROUND_LOCATION` to track location updates.
--   **Notifications**: `POST_NOTIFICATIONS` to show alerts.
--   **Overlays**: Full-screen intent permission for the alarm trigger.
+The app requires the following Android permissions to guarantee full operational reliability:
+-   **Location**: `ACCESS_FINE_LOCATION` and `ACCESS_BACKGROUND_LOCATION` to reliably track device movement.
+-   **Notifications**: `POST_NOTIFICATIONS` to show heads-up and lock screen alerts.
+-   **System Overlays**: `USE_FULL_SCREEN_INTENT` designed specifically for alarm-clock style waking screens.
 
-Permissions are requested at runtime via the Settings screen or when necessary.
+Permissions are requested gracefully at runtime via the Settings "PERMISSIONS" dashboard.
 
 ## 🧪 Testing
 
