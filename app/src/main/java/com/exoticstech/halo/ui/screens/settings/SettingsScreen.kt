@@ -87,6 +87,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import com.exoticstech.halo.BuildConfig
 import com.exoticstech.halo.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -234,7 +235,7 @@ fun SettingsScreen(
 
             // 2. GENERAL
             SectionHeader(stringResource(R.string.section_general))
-            SettingsCard {
+              SettingsCard {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -472,7 +473,7 @@ fun SettingsScreen(
                         iconBgColor = MaterialTheme.colorScheme.surfaceVariant,
                         iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         trailing = {
-                            Text(stringResource(R.string.app_version), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("v${BuildConfig.VERSION_NAME}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         },
                         onClick = onNavigateToWalkthrough 
                     )
