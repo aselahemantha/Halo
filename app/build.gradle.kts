@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.dagger.hilt.android)
     alias(libs.plugins.devtools.ksp)
     id("kotlin-kapt")
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
@@ -25,16 +26,7 @@ android {
             useSupportLibrary = true
         }
 
-        val localProperties = Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localProperties.load(FileInputStream(localPropertiesFile))
-        }
-        val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
-        buildConfigField("boolean", "HAS_MAPS_API_KEY", "${mapsApiKey.isNotEmpty()}")
-        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {

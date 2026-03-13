@@ -20,7 +20,7 @@ class HaloApplication : Application(), Configuration.Provider {
             
     override fun onCreate() {
         super.onCreate()
-        if (BuildConfig.HAS_MAPS_API_KEY) {
+        if (BuildConfig.MAPS_API_KEY.isNotEmpty()) {
             com.google.android.libraries.places.api.Places.initialize(applicationContext, BuildConfig.MAPS_API_KEY)
         }
     }
