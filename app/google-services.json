@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "444614988691",
+    "project_id": "exotics-tech",
+    "storage_bucket": "exotics-tech.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:444614988691:android:573a52f273789c6d2f0e66",
+        "android_client_info": {
+          "package_name": "com.exoticstech.halo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAx6y16zZrz2Vc2cm6_334iyxGKLimgxrM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

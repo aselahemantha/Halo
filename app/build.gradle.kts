@@ -8,6 +8,9 @@ plugins {
     alias(libs.plugins.devtools.ksp)
     id("kotlin-kapt")
     alias(libs.plugins.secrets.gradle.plugin)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
 }
 
 android {
@@ -105,6 +108,12 @@ dependencies {
 
     // Gson for Backup & Restore
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.perf)
 
     // ZXing for QR Code generation
     implementation("com.google.zxing:core:3.5.3")
