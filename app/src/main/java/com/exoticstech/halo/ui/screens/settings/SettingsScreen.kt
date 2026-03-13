@@ -503,7 +503,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    stringResource(R.string.made_in_sri_lanka),
+                    stringResource(R.string.made_in_sri_lanka) + " \uD83E\uDD0D",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 2.sp

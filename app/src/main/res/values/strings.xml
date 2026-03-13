@@ -125,7 +125,7 @@
     <string name="about_app_label">About App</string>
     <string name="app_version">v1.0.0</string>
     <string name="reset_all_settings">Reset All Settings</string>
-    <string name="made_in_sri_lanka">MADE WITH PRECISION IN SRI LANKA &amp;#x1F90D;</string>
+    <string name="made_in_sri_lanka">MADE WITH PRECISION IN SRI LANKA</string>
 
     <!-- Service and Widget Strings -->
     <string name="notif_location_reached">Location Reached</string>
