@@ -1,6 +1,6 @@
 [versions]
 agp = "8.13.2"
-kotlin = "1.9.24"
+kotlin = "2.1.0"
 coreKtx = "1.12.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -8,8 +8,8 @@ espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.7.0"
 activityCompose = "1.8.2"
 composeBom = "2024.09.00"
-hilt = "2.50"
-ksp = "1.9.24-1.0.20"
+hilt = "2.55"
+ksp = "2.1.0-1.0.29"
 room = "2.6.1"
 mapsCompose = "4.3.3"
 playServicesLocation = "21.1.0"
@@ -84,3 +84,4 @@ secrets-gradle-plugin = { id = "com.google.android.libraries.mapsplatform.secret
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-perf-gradle" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

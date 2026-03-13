@@ -28,7 +28,8 @@
     <!-- AlarmItem Strings -->
     <string name="status_arriving_within">Arriving within %1$d m</string>
     <string name="status_disabled">Disabled</string>
-    <string name="cd_edit_alarm">Edit Alarm</string>
+    <string name="cd_share_alarm">Share Alarm</string>
+    <string name="cd_delete_alarm">Delete Alarm</string>
     <string name="eta_walk_format">%1$s • ~%2$s walk</string>
     <string name="eta_km_format">%.1f km</string>
     <string name="eta_m_format">%1$d m</string>
@@ -191,4 +192,5 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="cd_edit_alarm">Edit Alarm</string>
 </resources>
