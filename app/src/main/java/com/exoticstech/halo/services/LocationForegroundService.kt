@@ -40,6 +40,9 @@ class LocationForegroundService : Service() {
     @Inject
     lateinit var userPreferencesRepository: com.exoticstech.halo.data.repository.UserPreferencesRepository
 
+    @Inject
+    lateinit var geofenceManager: com.exoticstech.halo.domain.GeofenceManager
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationManager: NotificationManager
     private var mediaPlayer: MediaPlayer? = null
@@ -205,6 +208,11 @@ class LocationForegroundService : Service() {
                 )
                 alarmRepository.insertAlarmHistory(history)
             }
+
+            // Disable the alarm and remove geofence since it was triggered
+            val updatedAlarm = alarm.copy(isEnabled = false)
+            alarmRepository.updateAlarm(updatedAlarm)
+            geofenceManager.removeGeofence(alarm.id)
 
             playAlarmSound(soundUri)
             vibrate()
