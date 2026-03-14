@@ -65,8 +65,8 @@ class HomeViewModel @Inject constructor(
 
         // 1. Search filter
         if (query.isNotBlank()) {
-            filteredList = filteredList.filter { 
-                it.name.contains(query, ignoreCase = true) 
+            filteredList = filteredList.filter {
+                it.name.contains(query, ignoreCase = true)
             }
         }
 
@@ -138,7 +138,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val updatedAlarm = alarm.copy(isEnabled = isEnabled)
             repository.updateAlarm(updatedAlarm)
-            
+
             if (isEnabled) {
                 geofenceManager.addGeofence(updatedAlarm)
             } else {
@@ -156,25 +156,35 @@ class HomeViewModel @Inject constructor(
 
     fun refreshLocation() {
         try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    val latLng = com.google.android.gms.maps.model.LatLng(location.latitude, location.longitude)
-                    _currentLocation.value = latLng
-                    reverseGeocode(latLng)
-                } else {
-                    // If last location is null, try to get a one-time fresh location
-                    val priority = com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
-                    fusedLocationClient.getCurrentLocation(priority, null).addOnSuccessListener { freshLocation ->
-                        if (freshLocation != null) {
-                            val latLng = com.google.android.gms.maps.model.LatLng(freshLocation.latitude, freshLocation.longitude)
-                            _currentLocation.value = latLng
-                            reverseGeocode(latLng)
-                        } else {
-                            _currentAddress.value = context.getString(R.string.location_not_found)
-                        }
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        val latLng = com.google.android.gms.maps.model.LatLng(location.latitude, location.longitude)
+                        _currentLocation.value = latLng
+                        reverseGeocode(latLng)
+                    } else {
+                        // If last location is null, try to get a one-time fresh location
+                        val priority = com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+                        fusedLocationClient.getCurrentLocation(priority, null)
+                            .addOnSuccessListener { freshLocation ->
+                                if (freshLocation != null) {
+                                    val latLng = com.google.android.gms.maps.model.LatLng(freshLocation.latitude, freshLocation.longitude)
+                                    _currentLocation.value = latLng
+                                    reverseGeocode(latLng)
+                                } else {
+                                    _currentAddress.value = context.getString(R.string.location_not_found)
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                e.printStackTrace()
+                                _currentAddress.value = context.getString(R.string.location_not_found)
+                            }
                     }
                 }
-            }
+                .addOnFailureListener { e ->
+                    e.printStackTrace()
+                    _currentAddress.value = context.getString(R.string.error_fetching_address)
+                }
         } catch (e: SecurityException) {
             e.printStackTrace()
             _currentAddress.value = context.getString(R.string.permission_denied)
