@@ -22,7 +22,7 @@ fun PermissionRequestDialog(
             Text(text = "Permissions Required")
         },
         text = {
-            Text(text = "Halo needs access to your location and notifications to provide location-based alarms and alerts. Please grant these permissions to continue.")
+            Text(text = "Halo collects location data to enable location-based alarms even when the app is closed or not in use. This information is required for geofencing to trigger your alerts at the correct time.")
         },
         confirmButton = {
             Button(onClick = onConfirm) {

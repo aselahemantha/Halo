@@ -118,6 +118,7 @@ fun HomeScreen(
             val allGranted = result.values.all { it }
             if (allGranted) {
                 showPermissionDialog = false
+                viewModel.refreshLocation()
             } else {
                 showPermissionDialog = false
             }

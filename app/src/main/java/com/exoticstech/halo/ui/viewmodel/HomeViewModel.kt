@@ -123,7 +123,7 @@ class HomeViewModel @Inject constructor(
     )
 
     init {
-        getCurrentLocation()
+        refreshLocation()
     }
 
     fun updateSearchQuery(query: String) {
@@ -154,7 +154,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrentLocation() {
+    fun refreshLocation() {
         try {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
@@ -162,7 +162,17 @@ class HomeViewModel @Inject constructor(
                     _currentLocation.value = latLng
                     reverseGeocode(latLng)
                 } else {
-                    _currentAddress.value = context.getString(R.string.location_not_found)
+                    // If last location is null, try to get a one-time fresh location
+                    val priority = com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+                    fusedLocationClient.getCurrentLocation(priority, null).addOnSuccessListener { freshLocation ->
+                        if (freshLocation != null) {
+                            val latLng = com.google.android.gms.maps.model.LatLng(freshLocation.latitude, freshLocation.longitude)
+                            _currentLocation.value = latLng
+                            reverseGeocode(latLng)
+                        } else {
+                            _currentAddress.value = context.getString(R.string.location_not_found)
+                        }
+                    }
                 }
             }
         } catch (e: SecurityException) {

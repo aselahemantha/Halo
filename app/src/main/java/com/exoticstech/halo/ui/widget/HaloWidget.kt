@@ -24,6 +24,7 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.layout.Row
 import androidx.glance.layout.width
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import com.exoticstech.halo.data.local.AlarmDatabase
 import com.exoticstech.halo.R
@@ -43,18 +44,47 @@ class HaloWidget : GlanceAppWidget() {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface WidgetEntryPoint {
-        fun alarmDao(): AlarmDao
+        fun alarmDao(): com.exoticstech.halo.data.local.AlarmDao
+        fun fusedLocationClient(): com.google.android.gms.location.FusedLocationProviderClient
     }
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
-            val scope = rememberCoroutineScope()
             val activeAlarmCount = remember { mutableStateOf<Int?>(null) }
+            val currentAddress = remember { mutableStateOf<String?>(null) }
             
             LaunchedEffect(Unit) {
                 try {
                     val entryPoint = EntryPointAccessors.fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
+                    
+                    // Fetch Alarm Count
                     val activeAlarms = entryPoint.alarmDao().getActiveAlarms().firstOrNull() ?: emptyList()
                     activeAlarmCount.value = activeAlarms.size
+
+                    // Fetch Location
+                    val locationClient = entryPoint.fusedLocationClient()
+                    try {
+                        locationClient.lastLocation.addOnSuccessListener { location ->
+                            if (location != null) {
+                                // Simple reverse geocoding (blocking, but in LaunchedEffect it's okay for widget update)
+                                val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
+                                try {
+                                    val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                    if (!addresses.isNullOrEmpty()) {
+                                        currentAddress.value = addresses[0].getAddressLine(0)
+                                    } else {
+                                        currentAddress.value = "Unknown Location"
+                                    }
+                                } catch (e: Exception) {
+                                    currentAddress.value = "Error fetching address"
+                                }
+                            } else {
+                                currentAddress.value = "Location not available"
+                            }
+                        }
+                    } catch (e: SecurityException) {
+                        currentAddress.value = "Permission required"
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     activeAlarmCount.value = 0
@@ -80,29 +110,37 @@ class HaloWidget : GlanceAppWidget() {
                     text = context.getString(R.string.widget_title),
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        color = ColorProvider(Color(0xFF1976D2)) // Darker blue typography
+                        color = ColorProvider(Color(0xFF1976D2)),
+                        fontSize = 18.sp
                     )
                 )
                 
                 Spacer(modifier = GlanceModifier.height(8.dp))
                 
+                // Location Display
+                Text(
+                    text = currentAddress.value ?: context.getString(R.string.widget_loading),
+                    style = TextStyle(
+                        color = ColorProvider(Color.Black),
+                        fontSize = 14.sp
+                    ),
+                    maxLines = 1
+                )
+
+                Spacer(modifier = GlanceModifier.height(4.dp))
+
                 if (activeAlarmCount.value != null) {
                     Text(
                         text = context.getString(R.string.widget_active_alarms, activeAlarmCount.value),
                         style = TextStyle(
-                            color = ColorProvider(Color.Black)
-                        )
-                    )
-                } else {
-                    Text(
-                        text = context.getString(R.string.widget_loading),
-                        style = TextStyle(
-                            color = ColorProvider(Color.Gray)
+                            color = ColorProvider(Color(0xFF1976D2)),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp
                         )
                     )
                 }
 
-                Spacer(modifier = GlanceModifier.height(16.dp))
+                Spacer(modifier = GlanceModifier.height(12.dp))
 
                 Button(
                     text = context.getString(R.string.widget_add_alarm),
