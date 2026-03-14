@@ -115,13 +115,12 @@ fun HomeScreen(
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { result ->
-            val allGranted = result.values.all { it }
-            if (allGranted) {
-                showPermissionDialog = false
+            val locationGranted = result[android.Manifest.permission.ACCESS_FINE_LOCATION] == true || 
+                                 result[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (locationGranted) {
                 viewModel.refreshLocation()
-            } else {
-                showPermissionDialog = false
             }
+            showPermissionDialog = false
         }
     )
     

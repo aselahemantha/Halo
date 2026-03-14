@@ -164,21 +164,38 @@ class HomeViewModel @Inject constructor(
                         reverseGeocode(latLng)
                     } else {
                         // If last location is null, try to get a one-time fresh location
-                        val priority = com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
-                        fusedLocationClient.getCurrentLocation(priority, null)
-                            .addOnSuccessListener { freshLocation ->
-                                if (freshLocation != null) {
-                                    val latLng = com.google.android.gms.maps.model.LatLng(freshLocation.latitude, freshLocation.longitude)
-                                    _currentLocation.value = latLng
-                                    reverseGeocode(latLng)
-                                } else {
+                        val hasFineLocation = androidx.core.content.ContextCompat.checkSelfPermission(
+                            context, android.Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        
+                        val hasCoarseLocation = androidx.core.content.ContextCompat.checkSelfPermission(
+                            context, android.Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+                        val priority = when {
+                            hasFineLocation -> com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+                            hasCoarseLocation -> com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY
+                            else -> null
+                        }
+
+                        if (priority != null) {
+                            fusedLocationClient.getCurrentLocation(priority, null)
+                                .addOnSuccessListener { freshLocation ->
+                                    if (freshLocation != null) {
+                                        val latLng = com.google.android.gms.maps.model.LatLng(freshLocation.latitude, freshLocation.longitude)
+                                        _currentLocation.value = latLng
+                                        reverseGeocode(latLng)
+                                    } else {
+                                        _currentAddress.value = context.getString(R.string.location_not_found)
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    e.printStackTrace()
                                     _currentAddress.value = context.getString(R.string.location_not_found)
                                 }
-                            }
-                            .addOnFailureListener { e ->
-                                e.printStackTrace()
-                                _currentAddress.value = context.getString(R.string.location_not_found)
-                            }
+                        } else {
+                            _currentAddress.value = context.getString(R.string.permission_denied)
+                        }
                     }
                 }
                 .addOnFailureListener { e ->
