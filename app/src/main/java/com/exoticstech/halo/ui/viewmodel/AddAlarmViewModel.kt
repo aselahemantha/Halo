@@ -230,10 +230,8 @@ class AddAlarmViewModel @Inject constructor(
                 val place = response.place
                 place.latLng?.let { latLng ->
                     updateLocation(latLng)
-                    // If manually typing, we might want to update the name field too
-                    if (_locationName.value.isBlank()) {
-                        _locationName.value = place.name ?: primaryText
-                    }
+                    // Always update the name field to the selected place's name
+                    _locationName.value = place.name ?: primaryText
                     _searchQuery.value = place.name ?: primaryText
                     _searchSuggestions.value = emptyList()
                 }
@@ -254,10 +252,8 @@ class AddAlarmViewModel @Inject constructor(
                     val latLng = LatLng(address.latitude, address.longitude)
                     _selectedLocation.value = latLng
                     
-                    // Update name if empty
-                    if (_locationName.value.isBlank()) {
-                        _locationName.value = address.featureName ?: address.locality ?: query
-                    }
+                    // Always update name to the found address
+                    _locationName.value = address.featureName ?: address.locality ?: query
                     _searchSuggestions.value = emptyList()
                 }
             } catch (e: Exception) {
