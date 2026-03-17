@@ -62,9 +62,9 @@ fun HaloNavHost(
             AlarmTriggerScreen(
                 alarmId = alarmId,
                 onNavigateBack = {
-                    // Navigate only to Home
+                    // Reset backstack to Home
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
                 }
             )
