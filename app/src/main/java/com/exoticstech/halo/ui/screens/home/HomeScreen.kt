@@ -350,24 +350,49 @@ fun HomeScreen(
             // 3. Stats Section
             item {
                 val alarmsThisWeek by viewModel.alarmsThisWeek.collectAsState()
+                val totalAlarmsCount by viewModel.totalAlarmsCount.collectAsState()
                 val batteryImpact by viewModel.batteryImpact.collectAsState()
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 80.dp), // Padding for FAB
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize().padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.SsidChart, null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(stringResource(R.string.alarms_this_week), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            }
+                            
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(stringResource(R.string.created_alarms), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                    Text(totalAlarmsCount.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                }
+                                Spacer(modifier = Modifier.width(24.dp))
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(stringResource(R.string.triggered_this_week), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                    Text(alarmsThisWeek.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+
                     StatsCard(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.SsidChart,
-                        label = stringResource(R.string.alarms_this_week),
-                        value = alarmsThisWeek.toString(),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    StatsCard(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         icon = Icons.Default.BatteryStd,
                         label = stringResource(R.string.battery_impact),
                         value = batteryImpact,
+                        description = stringResource(R.string.battery_detail_format, activeCount),
                         color = if (batteryImpact == "High") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
@@ -375,4 +400,3 @@ fun HomeScreen(
         }
     }
 }
-

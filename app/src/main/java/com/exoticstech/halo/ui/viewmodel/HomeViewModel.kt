@@ -100,10 +100,16 @@ class HomeViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
-    val alarmsThisWeek: StateFlow<Int> = alarms.map { alarmList ->
+    val alarmsThisWeek: StateFlow<Int> = repository.getAlarmHistory().map { historyList ->
         val oneWeekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000
-        alarmList.count { it.createdDate > oneWeekAgo }
+        historyList.count { it.triggerTime > oneWeekAgo }
     }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    val totalAlarmsCount: StateFlow<Int> = repository.getAllAlarms().map { it.size }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0

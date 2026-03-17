@@ -22,8 +22,11 @@
     <string name="filter_inactive">Inactive</string>
     <string name="filter_nearest">Nearest</string>
     <string name="no_alarms_created">No alarms created yet.</string>
-    <string name="alarms_this_week">Alarms this week</string>
+    <string name="alarms_this_week">Recent triggers</string>
+    <string name="created_alarms">Total created</string>
+    <string name="triggered_this_week">Triggered this week</string>
     <string name="battery_impact">Battery impact</string>
+    <string name="battery_detail_format">Based on %1$d active alarms</string>
 
     <!-- AlarmItem Strings -->
     <string name="status_arriving_within">Arriving within %1$d m</string>

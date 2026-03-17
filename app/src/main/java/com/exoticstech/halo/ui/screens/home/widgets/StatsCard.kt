@@ -3,6 +3,7 @@ package com.exoticstech.halo.ui.screens.home.widgets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,18 +27,18 @@ fun StatsCard(
     icon: ImageVector,
     label: String,
     value: String,
+    description: String? = null,
     color: Color
 ) {
     Card(
-        modifier = modifier.height(140.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Icon(icon, contentDescription = null, tint = color)
@@ -45,14 +46,21 @@ fun StatsCard(
             Column {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 32.sp),
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
+                if (description != null) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
             }
         }
     }
