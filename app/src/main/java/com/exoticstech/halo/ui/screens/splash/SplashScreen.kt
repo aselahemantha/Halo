@@ -24,15 +24,19 @@ import com.exoticstech.halo.ui.viewmodel.MainViewModel
 @Composable
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
-    onNavigateToOnboarding: () -> Unit
+    onNavigateToOnboarding: () -> Unit,
+    onNavigateToPermissions: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val viewModel = hiltViewModel<MainViewModel>()
     val isFirstLaunch by viewModel.isFirstLaunch.collectAsState()
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.splash_animation))
 
     LaunchedEffect(Unit) {
         delay(1000)
-        if (isFirstLaunch) {
+        if (!com.exoticstech.halo.utils.PermissionUtils.areMandatoryPermissionsGranted(context)) {
+            onNavigateToPermissions()
+        } else if (isFirstLaunch) {
             onNavigateToOnboarding()
         } else {
             onNavigateToHome()

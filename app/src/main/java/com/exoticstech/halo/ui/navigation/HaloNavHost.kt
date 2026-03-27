@@ -37,6 +37,22 @@ fun HaloNavHost(
                     navController.navigate(Screen.Walkthrough.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
+                },
+                onNavigateToPermissions = {
+                    navController.navigate(Screen.Permissions.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Permissions.route) {
+            com.exoticstech.halo.ui.screens.permissions.PermissionRequestScreen(
+                onAllPermissionsGranted = {
+                    // Check where to go after permissions are granted
+                    // We can use a simple way: navigate to Splash again or check ViewModel
+                    navController.navigate(Screen.Splash.route) {
+                        popUpTo(Screen.Permissions.route) { inclusive = true }
+                    }
                 }
             )
         }
