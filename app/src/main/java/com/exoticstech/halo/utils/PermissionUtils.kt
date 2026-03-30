@@ -26,9 +26,23 @@ object PermissionUtils {
     }
 
     fun areMandatoryPermissionsGranted(context: Context): Boolean {
-        return getMandatoryPermissions().all { permission ->
+        val allGranted = getMandatoryPermissions().all { permission ->
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }
+        
+        val fullScreenAllowed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.canUseFullScreenIntent()
+        } else true
+        
+        return allGranted && fullScreenAllowed
+    }
+
+    fun isFullScreenIntentAllowed(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            notificationManager.canUseFullScreenIntent()
+        } else true
     }
     
     fun isPermissionGranted(context: Context, permission: String): Boolean {

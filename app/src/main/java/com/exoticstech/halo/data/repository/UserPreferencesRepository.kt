@@ -38,7 +38,6 @@ class UserPreferencesRepository @Inject constructor(
             val uri = preferences[ALARM_SOUND_URI_KEY] ?: ""
             val title = preferences[ALARM_SOUND_TITLE_KEY] ?: "Default"
             uri to title
-            uri to title
         }
 
     val isFirstLaunch: Flow<Boolean> = context.dataStore.data

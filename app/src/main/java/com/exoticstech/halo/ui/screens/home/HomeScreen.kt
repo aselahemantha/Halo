@@ -106,11 +106,15 @@ fun HomeScreen(
     var showPermissionDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
     
-    val permissions = arrayOf(
-        android.Manifest.permission.ACCESS_FINE_LOCATION,
-        android.Manifest.permission.ACCESS_COARSE_LOCATION,
-        android.Manifest.permission.POST_NOTIFICATIONS
-    )
+    // Only check foreground permissions here. Background location is handled by
+    // the dedicated PermissionRequestScreen with a proper 2-step flow (Android 11+ requirement).
+    val foregroundPermissions = buildList {
+        add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            add(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }.toTypedArray()
 
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(),
@@ -125,7 +129,7 @@ fun HomeScreen(
     )
     
     LaunchedEffect(Unit) {
-        val hasPermissions = permissions.all {
+        val hasPermissions = foregroundPermissions.all {
                 androidx.core.content.ContextCompat.checkSelfPermission(context, it) == android.content.pm.PackageManager.PERMISSION_GRANTED
         }
         
@@ -138,13 +142,13 @@ fun HomeScreen(
         com.exoticstech.halo.ui.components.PermissionRequestDialog(
             onDismiss = { showPermissionDialog = false },
             onConfirm = {
-                permissionLauncher.launch(permissions)
+                permissionLauncher.launch(foregroundPermissions)
             }
         )
     }
 
     val checkPermissions = {
-        val hasPermissions = permissions.all {
+        val hasPermissions = foregroundPermissions.all {
             androidx.core.content.ContextCompat.checkSelfPermission(context, it) == android.content.pm.PackageManager.PERMISSION_GRANTED
         }
         if (!hasPermissions) {

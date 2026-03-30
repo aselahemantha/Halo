@@ -27,7 +27,8 @@ object AppModule {
             AlarmDatabase::class.java,
             "alarm_database"
         )
-        .fallbackToDestructiveMigration()
+        .addMigrations(*AlarmDatabase.ALL_MIGRATIONS)
+        .fallbackToDestructiveMigrationOnDowngrade()
         .build()
     }
 

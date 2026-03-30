@@ -23,12 +23,14 @@ import com.exoticstech.halo.domain.repository.AlarmRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,7 +49,8 @@ class LocationForegroundService : Service() {
     private lateinit var notificationManager: NotificationManager
     private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
-    private val recentlyTriggeredAlarms = mutableSetOf<Long>()
+    private val recentlyTriggeredAlarms: MutableSet<Long> = ConcurrentHashMap.newKeySet()
+    private var autoTimeoutJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -142,54 +145,68 @@ class LocationForegroundService : Service() {
                 recentlyTriggeredAlarms.remove(alarm.id)
             }
 
-            val alarmName = alarm.name ?: getString(R.string.notif_location_reached)
+            val alarmName = alarm.name.ifBlank { getString(R.string.notif_location_reached) }
 
-            // Full Screen Intent
+            // Full Screen Intent — use alarm ID as request code to avoid collisions
             val fullScreenIntent = Intent(this@LocationForegroundService, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("navigate_to", "trigger_screen") // Simple way to tell UI to show trigger
+                putExtra("navigate_to", "trigger_screen")
                 putExtra("alarm_id", alarm.id.toString())
             }
-            val pendingIntent = PendingIntent.getActivity(
+            val fullScreenPendingIntent = PendingIntent.getActivity(
                 this@LocationForegroundService, 
-                0, 
+                REQUEST_CODE_FULLSCREEN_BASE + alarm.id.toInt(), 
                 fullScreenIntent, 
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
+            // Stop intent — use a distinct fixed request code
             val stopIntent = Intent(this@LocationForegroundService, LocationForegroundService::class.java).apply {
                 action = ACTION_STOP_ALARM
             }
             val stopPendingIntent = PendingIntent.getService(
                 this@LocationForegroundService,
-                0,
+                REQUEST_CODE_STOP,
                 stopIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val notification = NotificationCompat.Builder(this@LocationForegroundService, CHANNEL_ID)
+            // Build notification with full-screen intent fallback
+            val notificationBuilder = NotificationCompat.Builder(this@LocationForegroundService, CHANNEL_ID)
                 .setContentTitle(getString(R.string.notif_destination_reached))
                 .setContentText(alarmName)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(fullScreenPendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setFullScreenIntent(pendingIntent, true)
                 .setAutoCancel(true)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notif_end_alarm), stopPendingIntent)
-                .build()
 
+            // Only set fullScreenIntent if the permission is granted (Android 14+).
+            // Otherwise, the high-priority heads-up notification serves as fallback.
+            val canUseFullScreen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                notificationManager.canUseFullScreenIntent()
+            } else {
+                true
+            }
+
+            if (canUseFullScreen) {
+                notificationBuilder.setFullScreenIntent(fullScreenPendingIntent, true)
+            }
+
+            val notification = notificationBuilder.build()
             startForeground(NOTIFICATION_ID, notification)
             
             // Explicitly start the activity for popup
             try {
                 startActivity(fullScreenIntent)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w("LocationService", "Could not start trigger activity", e)
             }
             
             // Determine sound to play
-            val soundUri = if (!alarm?.soundUri.isNullOrEmpty()) {
-                android.net.Uri.parse(alarm?.soundUri)
+            val soundUri = if (!alarm.soundUri.isNullOrEmpty()) {
+                android.net.Uri.parse(alarm.soundUri)
             } else {
                 // Fallback to global preference
                 val (globalUriString, _) = userPreferencesRepository.alarmSound.first()
@@ -198,16 +215,14 @@ class LocationForegroundService : Service() {
             }
 
             // Log the trigger history
-            if (alarm != null) {
-                val history = com.exoticstech.halo.domain.model.AlarmHistory(
-                    alarmId = alarm.id,
-                    alarmName = alarm.name,
-                    triggerTime = System.currentTimeMillis(),
-                    latitude = alarm.latitude,
-                    longitude = alarm.longitude
-                )
-                alarmRepository.insertAlarmHistory(history)
-            }
+            val history = com.exoticstech.halo.domain.model.AlarmHistory(
+                alarmId = alarm.id,
+                alarmName = alarm.name,
+                triggerTime = System.currentTimeMillis(),
+                latitude = alarm.latitude,
+                longitude = alarm.longitude
+            )
+            alarmRepository.insertAlarmHistory(history)
 
             // Disable the alarm and remove geofence since it was triggered
             val updatedAlarm = alarm.copy(isEnabled = false)
@@ -216,6 +231,14 @@ class LocationForegroundService : Service() {
 
             playAlarmSound(soundUri)
             vibrate()
+
+            // Auto-timeout: stop sound and vibration after 5 minutes to prevent battery drain
+            autoTimeoutJob?.cancel()
+            autoTimeoutJob = launch {
+                delay(ALARM_AUTO_TIMEOUT_MILLIS)
+                Log.d("LocationService", "Auto-timeout reached, stopping alarm feedback")
+                stopAlarmFeedback()
+            }
         }
     }
 
@@ -352,6 +375,7 @@ class LocationForegroundService : Service() {
 
     companion object {
         const val ALARM_COOLDOWN_MILLIS = 300_000L // 5 minutes
+        const val ALARM_AUTO_TIMEOUT_MILLIS = 300_000L // 5 minutes — auto-stop sound/vibration
         const val ACTION_TRIGGER_ALARM = "ACTION_TRIGGER_ALARM"
         const val ACTION_STOP_ALARM = "ACTION_STOP_ALARM"
         const val ACTION_SNOOZE = "ACTION_SNOOZE"
@@ -360,5 +384,9 @@ class LocationForegroundService : Service() {
         const val EXTRA_ALARM_ID = "EXTRA_ALARM_ID"
         const val CHANNEL_ID = "halo_alarm_channel"
         const val NOTIFICATION_ID = 1
+        // Unique PendingIntent request codes to avoid collisions
+        private const val REQUEST_CODE_FULLSCREEN_BASE = 1000
+        private const val REQUEST_CODE_STOP = 2000
+        private const val REQUEST_CODE_SNOOZE_BASE = 3000
     }
 }

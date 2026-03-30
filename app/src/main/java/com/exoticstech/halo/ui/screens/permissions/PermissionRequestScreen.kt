@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -57,6 +58,9 @@ fun PermissionRequestScreen(
             } else true
         ) 
     }
+    var fullScreenIntentGranted by remember {
+        mutableStateOf(PermissionUtils.isFullScreenIntentAllowed(context))
+    }
 
     // Launchers
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
@@ -84,9 +88,30 @@ fun PermissionRequestScreen(
     }
 
     // Check if all are granted to navigate away
-    LaunchedEffect(foregroundLocationGranted, backgroundLocationGranted, notificationsGranted) {
-        if (foregroundLocationGranted && backgroundLocationGranted && notificationsGranted) {
+    LaunchedEffect(foregroundLocationGranted, backgroundLocationGranted, notificationsGranted, fullScreenIntentGranted) {
+        if (foregroundLocationGranted && backgroundLocationGranted && notificationsGranted && fullScreenIntentGranted) {
             onAllPermissionsGranted()
+        }
+    }
+
+    // Re-check full screen intent permission when returning from settings
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                fullScreenIntentGranted = PermissionUtils.isFullScreenIntentAllowed(context)
+                foregroundLocationGranted = PermissionUtils.isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                backgroundLocationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    PermissionUtils.isPermissionGranted(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                } else true
+                notificationsGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    PermissionUtils.isPermissionGranted(context, Manifest.permission.POST_NOTIFICATIONS)
+                } else true
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -148,6 +173,15 @@ fun PermissionRequestScreen(
                 isGranted = notificationsGranted
             )
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            PermissionItem(
+                icon = Icons.Rounded.Warning,
+                title = "Full-screen Alarms",
+                description = "Required to show the alarm over your lock screen on Android 14+.",
+                isGranted = fullScreenIntentGranted
+            )
+        }
         
         Spacer(modifier = Modifier.height(48.dp))
         
@@ -167,6 +201,12 @@ fun PermissionRequestScreen(
                     }
                     !notificationsGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                         notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                    !fullScreenIntentGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                        val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
                     }
                     showSettingsRationale -> {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
