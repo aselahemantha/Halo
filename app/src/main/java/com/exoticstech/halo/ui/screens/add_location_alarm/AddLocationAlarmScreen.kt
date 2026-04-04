@@ -1,8 +1,5 @@
 package com.exoticstech.halo.ui.screens.add_location_alarm
 
-import com.exoticstech.halo.ui.screens.add_location_alarm.widgets.SoundChip
-import com.exoticstech.halo.ui.screens.add_location_alarm.widgets.FloatingActionButton
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,8 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -35,6 +37,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -58,23 +61,27 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.material3.AlertDialog
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.exoticstech.halo.R
+import com.exoticstech.halo.ui.screens.add_location_alarm.widgets.FloatingActionButton
+import com.exoticstech.halo.ui.screens.add_location_alarm.widgets.SoundChip
 import com.exoticstech.halo.ui.viewmodel.AddAlarmViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -86,22 +93,15 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.res.stringResource
-import com.exoticstech.halo.R
 import kotlinx.coroutines.launch
 
+@Suppress("ktlint:standard:function-naming")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddLocationAlarmScreen(
     onNavigateBack: () -> Unit,
     onAlarmSaved: () -> Unit,
-    viewModel: AddAlarmViewModel = hiltViewModel()
+    viewModel: AddAlarmViewModel = hiltViewModel(),
 ) {
     val selectedLocation by viewModel.selectedLocation.collectAsState()
     val radius by viewModel.radius.collectAsState()
@@ -122,11 +122,11 @@ fun AddLocationAlarmScreen(
     val isEditMode = editingAlarmId != null
     val context = androidx.compose.ui.platform.LocalContext.current
 
-
     val singapore = LatLng(1.35, 103.87)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(singapore, 12f)
-    }
+    val cameraPositionState =
+        rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(singapore, 12f)
+        }
 
     // Animate camera to selected location
     LaunchedEffect(selectedLocation) {
@@ -143,57 +143,65 @@ fun AddLocationAlarmScreen(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                myLocationButtonEnabled = false
-            ),
+            uiSettings =
+                MapUiSettings(
+                    zoomControlsEnabled = false,
+                    myLocationButtonEnabled = false,
+                ),
             onMapLongClick = { latLng ->
                 viewModel.updateLocation(latLng)
-            }
+            },
         ) {
             selectedLocation?.let { location ->
                 Marker(
                     state = MarkerState(position = location),
-                    title = stringResource(R.string.cd_selected_location)
+                    title = stringResource(R.string.cd_selected_location),
                 )
                 Circle(
                     center = location,
                     radius = radius,
                     strokeColor = MaterialTheme.colorScheme.primary,
                     fillColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    strokeWidth = 2f
+                    strokeWidth = 2f,
                 )
             }
         }
 
         // 2. Top Bar & Search Layer
         Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
         ) {
             // Unified Header Box
             Surface(
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                shadowElevation = 4.dp
+                shadowElevation = 4.dp,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .padding(end = 16.dp)
+                    modifier =
+                        Modifier
+                            .padding(end = 16.dp),
                 ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, stringResource(R.string.cd_back))
                     }
                     Text(
-                        text = if (isEditMode) stringResource(R.string.edit_alarm_title) else stringResource(
-                            R.string.set_new_alarm_title
-                        ),
+                        text =
+                            if (isEditMode) {
+                                stringResource(R.string.edit_alarm_title)
+                            } else {
+                                stringResource(
+                                    R.string.set_new_alarm_title,
+                                )
+                            },
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -202,12 +210,13 @@ fun AddLocationAlarmScreen(
 
             // Search Bar
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 4.dp
+                shadowElevation = 4.dp,
             ) {
                 BasicTextField(
                     value = searchQuery,
@@ -215,21 +224,22 @@ fun AddLocationAlarmScreen(
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            viewModel.performSearch(searchQuery)
-                            keyboardController?.hide()
-                        }
-                    ),
+                    keyboardActions =
+                        KeyboardActions(
+                            onSearch = {
+                                viewModel.performSearch(searchQuery)
+                                keyboardController?.hide()
+                            },
+                        ),
                     decorationBox = { innerTextField ->
                         Row(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 Icons.Default.Search,
                                 stringResource(R.string.cd_search),
-                                tint = Color.Gray
+                                tint = Color.Gray,
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Box(modifier = Modifier.weight(1f)) {
@@ -237,7 +247,7 @@ fun AddLocationAlarmScreen(
                                     Text(
                                         stringResource(R.string.search_location_hint),
                                         color = Color.Gray,
-                                        style = MaterialTheme.typography.bodyLarge
+                                        style = MaterialTheme.typography.bodyLarge,
                                     )
                                 }
                                 innerTextField()
@@ -247,12 +257,12 @@ fun AddLocationAlarmScreen(
                                     Icon(
                                         Icons.Default.Close,
                                         stringResource(R.string.cd_clear),
-                                        tint = Color.Gray
+                                        tint = Color.Gray,
                                     )
                                 }
                             }
                         }
-                    }
+                    },
                 )
             }
 
@@ -260,12 +270,13 @@ fun AddLocationAlarmScreen(
             if (searchSuggestions.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 androidx.compose.foundation.lazy.LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp) // Limit height
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                        .padding(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(200.dp) // Limit height
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                            .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(searchSuggestions.size) { index ->
                         val prediction = searchSuggestions[index]
@@ -273,33 +284,33 @@ fun AddLocationAlarmScreen(
                         val secondaryText = prediction.getSecondaryText(null).toString()
 
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.onSuggestionSelected(prediction.placeId, primaryText)
-                                    keyboardController?.hide()
-                                }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.onSuggestionSelected(prediction.placeId, primaryText)
+                                        keyboardController?.hide()
+                                    }.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 Icons.Default.LocationOn,
                                 null,
                                 tint = Color.Gray,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
                                     primaryText,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 if (secondaryText.isNotBlank()) {
                                     Text(
                                         secondaryText,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
+                                        color = Color.Gray,
                                     )
                                 }
                             }
@@ -311,36 +322,38 @@ fun AddLocationAlarmScreen(
 
         // 3. Map Controls (Right Side)
         Column(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 160.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 160.dp, end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             FloatingActionButton(
                 onClick = { viewModel.getCurrentLocation() },
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 shape = CircleShape,
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(50.dp),
             ) {
                 Icon(Icons.Default.MyLocation, stringResource(R.string.cd_my_location))
             }
 
             Column(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                        .padding(8.dp),
             ) {
                 IconButton(
                     onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomIn()) } },
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(36.dp),
                 ) {
                     Icon(Icons.Default.Add, stringResource(R.string.cd_zoom_in))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 IconButton(
                     onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.zoomOut()) } },
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(36.dp),
                 ) {
                     Icon(Icons.Default.Remove, stringResource(R.string.cd_zoom_out))
                 }
@@ -350,39 +363,42 @@ fun AddLocationAlarmScreen(
         // 4. Bottom Sheet (Alarm Details)
         val screenHeight = LocalConfiguration.current.screenHeightDp.dp
         Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .heightIn(max = screenHeight * 0.60f),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .heightIn(max = screenHeight * 0.60f),
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
+            tonalElevation = 8.dp,
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(24.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
             ) {
                 // Drag Handle
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .width(40.dp)
-                        .height(4.dp)
-                        .background(Color.LightGray, CircleShape)
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .width(40.dp)
+                            .height(4.dp)
+                            .background(Color.LightGray, CircleShape),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = stringResource(R.string.alarm_details_title),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 )
                 Text(
                     text = stringResource(R.string.alarm_details_desc),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = Color.Gray,
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -391,7 +407,7 @@ fun AddLocationAlarmScreen(
                 Text(
                     stringResource(R.string.location_name_label),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
@@ -399,18 +415,20 @@ fun AddLocationAlarmScreen(
                     onValueChange = { viewModel.updateName(it) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                            alpha = 0.3f
+                    colors =
+                        OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor =
+                                MaterialTheme.colorScheme.surfaceVariant.copy(
+                                    alpha = 0.3f,
+                                ),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                         ),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
                     leadingIcon = {
                         Icon(Icons.Default.Label, null, tint = MaterialTheme.colorScheme.primary)
                     },
-                    placeholder = { Text(stringResource(R.string.location_name_hint)) }
+                    placeholder = { Text(stringResource(R.string.location_name_hint)) },
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -419,30 +437,32 @@ fun AddLocationAlarmScreen(
                 Text(
                     stringResource(R.string.category_label),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 androidx.compose.foundation.lazy.LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    val categories = listOf(
-                        "General" to R.string.cat_general,
-                        "Work" to R.string.cat_work,
-                        "Home" to R.string.cat_home,
-                        "Travel" to R.string.cat_travel,
-                        "Store" to R.string.cat_store
-                    )
+                    val categories =
+                        listOf(
+                            "General" to R.string.cat_general,
+                            "Work" to R.string.cat_work,
+                            "Home" to R.string.cat_home,
+                            "Travel" to R.string.cat_travel,
+                            "Store" to R.string.cat_store,
+                        )
                     items(categories.size) { index ->
                         val (catKey, resId) = categories[index]
                         FilterChip(
                             selected = category == catKey,
                             onClick = { viewModel.updateCategory(catKey) },
                             label = { Text(stringResource(resId)) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            colors =
+                                FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
                         )
                     }
                 }
@@ -453,43 +473,43 @@ fun AddLocationAlarmScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         stringResource(R.string.geofence_radius_label),
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         stringResource(R.string.radius_format_m, radius.toInt()),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 Slider(
                     value = radius.toFloat(),
                     onValueChange = { viewModel.updateRadius(it.toDouble()) },
                     valueRange = 100f..5000f,
-                    steps = 0
+                    steps = 0,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         stringResource(R.string.radius_100m),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                     Text(
                         stringResource(R.string.radius_2_5km),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                     Text(
                         stringResource(R.string.radius_5km),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                 }
 
@@ -499,27 +519,29 @@ fun AddLocationAlarmScreen(
                 Text(
                     stringResource(R.string.trigger_label),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val map = mapOf(
-                        "ENTER" to stringResource(R.string.trigger_enter),
-                        "EXIT" to stringResource(R.string.trigger_exit),
-                        "DWELL" to stringResource(R.string.trigger_dwell)
-                    )
+                    val map =
+                        mapOf(
+                            "ENTER" to stringResource(R.string.trigger_enter),
+                            "EXIT" to stringResource(R.string.trigger_exit),
+                            "DWELL" to stringResource(R.string.trigger_dwell),
+                        )
                     map.forEach { (type, label) ->
                         FilterChip(
                             selected = triggerType == type,
                             onClick = { viewModel.updateTriggerType(type) },
                             label = { Text(label) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            colors =
+                                FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
                         )
                     }
                 }
@@ -529,24 +551,24 @@ fun AddLocationAlarmScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             stringResource(R.string.dwell_time_label),
                             style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             stringResource(R.string.dwell_time_format, dwellTimeMinutes ?: 5),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                     }
                     Slider(
                         value = (dwellTimeMinutes ?: 5).toFloat(),
                         onValueChange = { viewModel.updateDwellTime(it.toInt()) },
                         valueRange = 1f..60f,
-                        steps = 58
+                        steps = 58,
                     )
                 }
 
@@ -556,40 +578,41 @@ fun AddLocationAlarmScreen(
                 Text(
                     stringResource(R.string.schedule_label),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Day Picker
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    val days = listOf(
-                        java.util.Calendar.SUNDAY to "S",
-                        java.util.Calendar.MONDAY to "M",
-                        java.util.Calendar.TUESDAY to "T",
-                        java.util.Calendar.WEDNESDAY to "W",
-                        java.util.Calendar.THURSDAY to "T",
-                        java.util.Calendar.FRIDAY to "F",
-                        java.util.Calendar.SATURDAY to "S"
-                    )
+                    val days =
+                        listOf(
+                            java.util.Calendar.SUNDAY to "S",
+                            java.util.Calendar.MONDAY to "M",
+                            java.util.Calendar.TUESDAY to "T",
+                            java.util.Calendar.WEDNESDAY to "W",
+                            java.util.Calendar.THURSDAY to "T",
+                            java.util.Calendar.FRIDAY to "F",
+                            java.util.Calendar.SATURDAY to "S",
+                        )
                     days.forEach { (calendarDay, label) ->
                         val isSelected = daysOfWeek.contains(calendarDay)
                         Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .clickable { viewModel.toggleDayOfWeek(calendarDay) },
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                    ).clickable { viewModel.toggleDayOfWeek(calendarDay) },
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = label,
                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }
@@ -600,19 +623,22 @@ fun AddLocationAlarmScreen(
                 // Time Limits
                 var showStartTimePicker by androidx.compose.runtime.remember {
                     androidx.compose.runtime.mutableStateOf(
-                        false
+                        false,
                     )
                 }
                 var showEndTimePicker by androidx.compose.runtime.remember {
                     androidx.compose.runtime.mutableStateOf(
-                        false
+                        false,
                     )
                 }
 
                 val notSetStr = stringResource(R.string.time_not_set)
                 val formatStr = stringResource(R.string.time_format)
 
-                fun formatTime(hour: Int?, minute: Int?): String {
+                fun formatTime(
+                    hour: Int?,
+                    minute: Int?,
+                ): String {
                     if (hour == null || minute == null) return notSetStr
                     val isPm = hour >= 12
                     val displayHour = if (hour == 0 || hour == 12) 12 else hour % 12
@@ -622,29 +648,29 @@ fun AddLocationAlarmScreen(
                         formatStr,
                         displayHour,
                         minute,
-                        period
+                        period,
                     )
                 }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     // Start Time Button
                     androidx.compose.material3.OutlinedButton(
                         onClick = { showStartTimePicker = true },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stringResource(R.string.start_time_label),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                color = Color.Gray,
                             )
                             Text(
                                 formatTime(startTimeHour, startTimeMinute),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
                             )
                         }
                     }
@@ -653,17 +679,17 @@ fun AddLocationAlarmScreen(
                     androidx.compose.material3.OutlinedButton(
                         onClick = { showEndTimePicker = true },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 stringResource(R.string.end_time_label),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                color = Color.Gray,
                             )
                             Text(
                                 formatTime(endTimeHour, endTimeMinute),
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
                             )
                         }
                     }
@@ -671,18 +697,21 @@ fun AddLocationAlarmScreen(
 
                 // Start Time Dialog
                 if (showStartTimePicker) {
-                    val timePickerState = rememberTimePickerState(
-                        initialHour = startTimeHour ?: 8,
-                        initialMinute = startTimeMinute ?: 0,
-                        is24Hour = false
-                    )
+                    val timePickerState =
+                        rememberTimePickerState(
+                            initialHour = startTimeHour ?: 8,
+                            initialMinute = startTimeMinute ?: 0,
+                            is24Hour = false,
+                        )
                     AlertDialog(
                         onDismissRequest = { showStartTimePicker = false },
                         confirmButton = {
                             TextButton(onClick = {
                                 viewModel.updateTimeWindow(
-                                    timePickerState.hour, timePickerState.minute,
-                                    endTimeHour, endTimeMinute
+                                    timePickerState.hour,
+                                    timePickerState.minute,
+                                    endTimeHour,
+                                    endTimeMinute,
                                 )
                                 showStartTimePicker = false
                             }) { Text(stringResource(R.string.ok_btn)) }
@@ -690,28 +719,31 @@ fun AddLocationAlarmScreen(
                         dismissButton = {
                             TextButton(onClick = { showStartTimePicker = false }) {
                                 Text(
-                                    stringResource(R.string.cancel_btn)
+                                    stringResource(R.string.cancel_btn),
                                 )
                             }
                         },
-                        text = { TimePicker(state = timePickerState) }
+                        text = { TimePicker(state = timePickerState) },
                     )
                 }
 
                 // End Time Dialog
                 if (showEndTimePicker) {
-                    val timePickerState = rememberTimePickerState(
-                        initialHour = endTimeHour ?: 17,
-                        initialMinute = endTimeMinute ?: 0,
-                        is24Hour = false
-                    )
+                    val timePickerState =
+                        rememberTimePickerState(
+                            initialHour = endTimeHour ?: 17,
+                            initialMinute = endTimeMinute ?: 0,
+                            is24Hour = false,
+                        )
                     AlertDialog(
                         onDismissRequest = { showEndTimePicker = false },
                         confirmButton = {
                             TextButton(onClick = {
                                 viewModel.updateTimeWindow(
-                                    startTimeHour, startTimeMinute,
-                                    timePickerState.hour, timePickerState.minute
+                                    startTimeHour,
+                                    startTimeMinute,
+                                    timePickerState.hour,
+                                    timePickerState.minute,
                                 )
                                 showEndTimePicker = false
                             }) { Text(stringResource(R.string.ok_btn)) }
@@ -719,11 +751,11 @@ fun AddLocationAlarmScreen(
                         dismissButton = {
                             TextButton(onClick = { showEndTimePicker = false }) {
                                 Text(
-                                    stringResource(R.string.cancel_btn)
+                                    stringResource(R.string.cancel_btn),
                                 )
                             }
                         },
-                        text = { TimePicker(state = timePickerState) }
+                        text = { TimePicker(state = timePickerState) },
                     )
                 }
 
@@ -732,7 +764,7 @@ fun AddLocationAlarmScreen(
                 val availableRingtones by viewModel.availableRingtones.collectAsState()
                 var showSoundDialog by androidx.compose.runtime.remember {
                     androidx.compose.runtime.mutableStateOf(
-                        false
+                        false,
                     )
                 }
 
@@ -748,7 +780,7 @@ fun AddLocationAlarmScreen(
                             viewModel.updateAlertSound(uri, title)
                             showSoundDialog = false
                         },
-                        onDismiss = { showSoundDialog = false }
+                        onDismiss = { showSoundDialog = false },
                     )
                 }
 
@@ -756,23 +788,26 @@ fun AddLocationAlarmScreen(
                 Text(
                     stringResource(R.string.alert_sound_label),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 androidx.compose.material3.OutlinedButton(
                     onClick = { showSoundDialog = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    border = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                    )
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                    border =
+                        BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        ),
                 ) {
                     Icon(Icons.Default.MusicNote, null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(12.dp))
@@ -781,7 +816,7 @@ fun AddLocationAlarmScreen(
                     Icon(
                         Icons.Default.MoreVert,
                         null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
 
@@ -790,21 +825,25 @@ fun AddLocationAlarmScreen(
                 // Save Button
                 Button(
                     onClick = { viewModel.saveAlarm(onAlarmSaved) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                     shape = RoundedCornerShape(28.dp),
-                    enabled = selectedLocation != null
+                    enabled = selectedLocation != null,
                 ) {
                     Text(
-                        if (isEditMode) stringResource(R.string.update_alarm_btn) else stringResource(
-                            R.string.save_alarm_btn
-                        ),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        if (isEditMode) {
+                            stringResource(R.string.update_alarm_btn)
+                        } else {
+                            stringResource(
+                                R.string.save_alarm_btn,
+                            )
+                        },
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                 }
             }
         }
     }
 }
-

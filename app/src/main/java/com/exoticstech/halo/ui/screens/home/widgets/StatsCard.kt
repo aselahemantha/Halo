@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun StatsCard(
     modifier: Modifier = Modifier,
@@ -28,7 +29,7 @@ fun StatsCard(
     label: String,
     value: String,
     description: String? = null,
-    color: Color
+    color: Color,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -36,29 +37,30 @@ fun StatsCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
     ) {
         Column(
-            modifier = Modifier
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             Icon(icon, contentDescription = null, tint = color)
-            
+
             Column {
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = Color.Gray,
                 )
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 if (description != null) {
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                 }
             }

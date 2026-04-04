@@ -1,6 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -29,8 +26,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-
     }
 
     buildTypes {
@@ -39,7 +34,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             ndk {
                 debugSymbolLevel = "full"
@@ -82,33 +77,33 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.lottie.compose)
-    
+
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    
+
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.places)
     kapt(libs.hilt.compiler)
-    
+
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
-    
+
     // Maps & Location
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
     implementation(libs.kotlinx.coroutines.play.services)
-    
+
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
-    
+
     // Permissions
     implementation(libs.accompanist.permissions)
-    
+
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
