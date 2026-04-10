@@ -27,6 +27,14 @@ val SurfaceVariantLight = Color(0xFFDFE2EB)
 val OnSurfaceVariantLight = Color(0xFF43474E)
 val OutlineLight = Color(0xFF73777F)
 
+// Trigger Screen Specific (Light)
+val TriggerBackgroundLight = Color(0xFFFDFCFF)
+val TriggerSurfaceLight = Color(0xFFF0F4F8)
+val TriggerPrimaryLight = Color(0xFF0061A4)
+val TriggerOnSurfaceLight = Color(0xFF1A1C1E)
+val TriggerOnSurfaceVariantLight = Color(0xFF43474E)
+
+
 // Dark Colors
 val PrimaryDark = Color(0xFF9ECAFF)
 val OnPrimaryDark = Color(0xFF003258)
@@ -51,3 +59,13 @@ val OnSurfaceDark = Color(0xFFE2E2E6)
 val SurfaceVariantDark = Color(0xFF43474E)
 val OnSurfaceVariantDark = Color(0xFFC3C7CF)
 val OutlineDark = Color(0xFF8D9199)
+
+// Trigger Screen Specific (Dark)
+val TriggerBackgroundDark = Color(0xFF0B0C10)
+val TriggerSurfaceDark = Color(0xFF1D1F26)
+val TriggerPrimaryDark = Color(0xFF0062AF)
+val TriggerOnSurfaceDark = Color(0xFFFFFFFF)
+val TriggerOnSurfaceVariantDark = Color(0xFF9EA1A7)
+val TriggerBadgeBgDark = Color(0xFF20222A)
+val TriggerSnoozeBgDark = Color(0xFF2C2E36)
+

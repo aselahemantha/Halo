@@ -2,6 +2,10 @@ package com.exoticstech.halo.ui.screens.alarm_trigger
 
 import com.exoticstech.halo.ui.screens.alarm_trigger.widgets.PulsatingButton
 import com.exoticstech.halo.ui.screens.alarm_trigger.widgets.StatusIndicator
+import com.exoticstech.halo.ui.screens.alarm_trigger.widgets.ArrivalAlertBadge
+import com.exoticstech.halo.ui.screens.alarm_trigger.widgets.TargetLocationCard
+import com.exoticstech.halo.ui.theme.*
+import androidx.compose.foundation.isSystemInDarkTheme
 
 import android.content.Intent
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -68,7 +72,13 @@ fun AlarmTriggerScreen(
 ) {
     val context = LocalContext.current
     val alarm by viewModel.alarm.collectAsState()
+    val darkTheme = isSystemInDarkTheme()
     
+    val backgroundColor = if (darkTheme) TriggerBackgroundDark else TriggerBackgroundLight
+    val onBackground = if (darkTheme) Color.White else Color.Black
+    val onSurfaceVariant = if (darkTheme) TriggerOnSurfaceVariantDark else TriggerOnSurfaceVariantLight
+    val snoozeBg = if (darkTheme) TriggerSnoozeBgDark else Color(0xFFF0F4F8)
+
     var isSoundOn by remember { mutableStateOf(true) }
     var isVibrationOn by remember { mutableStateOf(true) }
 
@@ -79,69 +89,45 @@ fun AlarmTriggerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(backgroundColor)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Icon
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Default.LocationOn, 
-                    contentDescription = null, 
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
+            Spacer(modifier = Modifier.height(20.dp))
             
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Title
-            Text(
-                text = "You've reached\nyour destination",
-                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            // Badge
+            ArrivalAlertBadge()
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Location Chip
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shadowElevation = 2.dp
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Navigation, 
-                        contentDescription = null, 
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = alarm?.name ?: "Unknown Location",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            // Title
+            Text(
+                text = "Destination Reached",
+                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
+                textAlign = TextAlign.Center,
+                color = onBackground
+            )
             
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Subtitle
+            Text(
+                text = "You have arrived within the set perimeter.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Target Location Card
+            TargetLocationCard(locationName = alarm?.name ?: "Headrogen | Sri Lanka")
+            
+            Spacer(modifier = Modifier.weight(1f))
             
             // Pulsating Stop Button
             PulsatingButton(
@@ -154,41 +140,44 @@ fun AlarmTriggerScreen(
                 }
             )
             
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.weight(1f))
             
             // Status Indicators
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                StatusIndicator(
-                    icon = if (isSoundOn) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
-                    label = if (isSoundOn) "SOUND ON" else "SOUND OFF",
-                    isActive = isSoundOn,
-                    onClick = {
-                        isSoundOn = !isSoundOn
-                        val intent = Intent(context, LocationForegroundService::class.java).apply {
-                            action = LocationForegroundService.ACTION_TOGGLE_SOUND
+                Box(modifier = Modifier.weight(1f)) {
+                    StatusIndicator(
+                        icon = if (isSoundOn) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                        label = if (isSoundOn) "Sound On" else "Sound Off",
+                        isActive = isSoundOn,
+                        onClick = {
+                            isSoundOn = !isSoundOn
+                            val intent = Intent(context, LocationForegroundService::class.java).apply {
+                                action = LocationForegroundService.ACTION_TOGGLE_SOUND
+                            }
+                            context.startService(intent)
                         }
-                        context.startService(intent)
-                    }
-                )
-                Spacer(modifier = Modifier.width(32.dp))
-                StatusIndicator(
-                    icon = Icons.Default.Vibration, 
-                    label = if (isVibrationOn) "VIBRATION ON" else "VIBRATION OFF",
-                    isActive = isVibrationOn,
-                    onClick = {
-                        isVibrationOn = !isVibrationOn
-                        val intent = Intent(context, LocationForegroundService::class.java).apply {
-                            action = LocationForegroundService.ACTION_TOGGLE_VIBRATION
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    StatusIndicator(
+                        icon = Icons.Default.Vibration, 
+                        label = if (isVibrationOn) "Vibration On" else "Vibration Off",
+                        isActive = isVibrationOn,
+                        onClick = {
+                            isVibrationOn = !isVibrationOn
+                            val intent = Intent(context, LocationForegroundService::class.java).apply {
+                                action = LocationForegroundService.ACTION_TOGGLE_VIBRATION
+                            }
+                            context.startService(intent)
                         }
-                        context.startService(intent)
-                    }
-                )
+                    )
+                }
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // Snooze Button
             Button(
@@ -203,28 +192,37 @@ fun AlarmTriggerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
+                    containerColor = snoozeBg,
+                    contentColor = onBackground
                 ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    "Snooze (5 min)",
+                    "Snooze",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 )
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             // Secondary Action
-            TextButton(onClick = { /* Remind later */ }) {
-                Text("Remind me in 500m", color = MaterialTheme.colorScheme.secondary)
+            TextButton(
+                onClick = { /* Remind later */ },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "Remind me in 500m", 
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(modifier = Modifier.width(40.dp).height(2.dp).background(onSurfaceVariant.copy(alpha = 0.3f)))
+                }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
