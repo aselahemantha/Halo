@@ -61,6 +61,9 @@ fun PermissionRequestScreen(
     var fullScreenIntentGranted by remember {
         mutableStateOf(PermissionUtils.isFullScreenIntentAllowed(context))
     }
+    var overlayPermissionGranted by remember {
+        mutableStateOf(PermissionUtils.isOverlayPermissionGranted(context))
+    }
 
     // Launchers
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
@@ -88,8 +91,8 @@ fun PermissionRequestScreen(
     }
 
     // Check if all are granted to navigate away
-    LaunchedEffect(foregroundLocationGranted, backgroundLocationGranted, notificationsGranted, fullScreenIntentGranted) {
-        if (foregroundLocationGranted && backgroundLocationGranted && notificationsGranted && fullScreenIntentGranted) {
+    LaunchedEffect(foregroundLocationGranted, backgroundLocationGranted, notificationsGranted, fullScreenIntentGranted, overlayPermissionGranted) {
+        if (foregroundLocationGranted && backgroundLocationGranted && notificationsGranted && fullScreenIntentGranted && overlayPermissionGranted) {
             onAllPermissionsGranted()
         }
     }
@@ -107,6 +110,7 @@ fun PermissionRequestScreen(
                 notificationsGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     PermissionUtils.isPermissionGranted(context, Manifest.permission.POST_NOTIFICATIONS)
                 } else true
+                overlayPermissionGranted = PermissionUtils.isOverlayPermissionGranted(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -182,6 +186,13 @@ fun PermissionRequestScreen(
                 isGranted = fullScreenIntentGranted
             )
         }
+
+        PermissionItem(
+            icon = Icons.Rounded.Security,
+            title = "Display Over Other Apps",
+            description = "Allows the alarm to pop up while you're using other applications.",
+            isGranted = overlayPermissionGranted
+        )
         
         Spacer(modifier = Modifier.height(48.dp))
         
@@ -204,6 +215,12 @@ fun PermissionRequestScreen(
                     }
                     !fullScreenIntentGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
                         val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    }
+                    !overlayPermissionGranted -> {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
                             data = Uri.fromParts("package", context.packageName, null)
                         }
                         context.startActivity(intent)

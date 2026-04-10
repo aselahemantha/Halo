@@ -309,9 +309,21 @@ class AddAlarmViewModel @Inject constructor(
             if (isEdit) {
                 repository.updateAlarm(alarm)
                 geofenceManager.addGeofence(alarm)
+                // Hardcoded: Trigger alarm immediately for test
+                val intent = android.content.Intent(context, com.exoticstech.halo.services.LocationForegroundService::class.java).apply {
+                    action = com.exoticstech.halo.services.LocationForegroundService.ACTION_TRIGGER_ALARM
+                    putExtra(com.exoticstech.halo.services.LocationForegroundService.EXTRA_ALARM_ID, alarmId.toString())
+                }
+                context.startForegroundService(intent)
             } else {
                 val newId = repository.insertAlarm(alarm)
                 geofenceManager.addGeofence(alarm.copy(id = newId))
+                // Hardcoded: Trigger alarm immediately for test
+                val intent = android.content.Intent(context, com.exoticstech.halo.services.LocationForegroundService::class.java).apply {
+                    action = com.exoticstech.halo.services.LocationForegroundService.ACTION_TRIGGER_ALARM
+                    putExtra(com.exoticstech.halo.services.LocationForegroundService.EXTRA_ALARM_ID, newId.toString())
+                }
+                context.startForegroundService(intent)
             }
 
             onSuccess()

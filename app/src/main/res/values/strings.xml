@@ -136,6 +136,8 @@
     <string name="notif_end_alarm">End Alarm</string>
     <string name="notif_channel_name">Alarm Channel</string>
     <string name="notif_channel_desc">Channel for Location Alarms</string>
+    <string name="notif_app_active">Halo is active</string>
+    <string name="notif_app_monitoring">Monitoring your destination in the background</string>
 
     <string name="widget_title">Halo Alarms</string>
     <string name="widget_active_alarms">%1$d Active Alarms</string>

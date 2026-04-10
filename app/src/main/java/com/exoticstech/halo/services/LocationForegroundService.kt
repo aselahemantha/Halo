@@ -171,16 +171,16 @@ class LocationForegroundService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // Build notification with full-screen intent fallback
+            // Build notification with generic background text
             val notificationBuilder = NotificationCompat.Builder(this@LocationForegroundService, CHANNEL_ID)
-                .setContentTitle(getString(R.string.notif_destination_reached))
-                .setContentText(alarmName)
+                .setContentTitle(getString(R.string.notif_app_active))
+                .setContentText(getString(R.string.notif_app_monitoring))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(fullScreenPendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Keep high for full-screen intent
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setAutoCancel(true)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notif_end_alarm), stopPendingIntent)
+                // Removed redundant actions as they are in the full-screen UI
 
             // Only set fullScreenIntent if the permission is granted (Android 14+).
             // Otherwise, the high-priority heads-up notification serves as fallback.
