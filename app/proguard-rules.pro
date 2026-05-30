@@ -24,8 +24,8 @@
 -keep class com.google.gson.** { *; }
 
 # Keep domain model classes used with Gson (backup & restore)
--keep class com.exoticstech.halo.domain.model.Alarm { *; }
--keep class com.exoticstech.halo.domain.model.AlarmHistory { *; }
+-keep class com.nebulatech.halo.domain.model.Alarm { *; }
+-keep class com.nebulatech.halo.domain.model.AlarmHistory { *; }
 
 # Keep generic type info for Gson TypeToken
 -keep class com.google.gson.reflect.TypeToken { *; }

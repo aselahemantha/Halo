@@ -12,11 +12,11 @@ plugins {
 }
 
 android {
-    namespace = "com.exoticstech.halo"
+    namespace = "com.nebulatech.halo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.exoticstech.halo"
+        applicationId = "com.nebulatech.halo"
         minSdk = 26
         targetSdk = 35
         versionCode = 8
