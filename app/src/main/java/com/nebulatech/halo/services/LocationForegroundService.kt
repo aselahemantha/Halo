@@ -281,40 +281,42 @@ class LocationForegroundService : Service() {
     }
 
     private fun snoozeAlarm(alarmId: String) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        val intent = Intent(this, com.nebulatech.halo.receivers.SnoozeReceiver::class.java).apply {
-            putExtra(EXTRA_ALARM_ID, alarmId)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            alarmId.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        serviceScope.launch {
+            val snoozeMinutes = userPreferencesRepository.snoozeDuration.first()
+            val triggerTime = System.currentTimeMillis() + snoozeMinutes * 60 * 1000
 
-        // Snooze for 5 minutes
-        val triggerTime = System.currentTimeMillis() + 5 * 60 * 1000
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val intent = Intent(this@LocationForegroundService, com.nebulatech.halo.receivers.SnoozeReceiver::class.java).apply {
+                putExtra(EXTRA_ALARM_ID, alarmId)
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                this@LocationForegroundService,
+                alarmId.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                     alarmManager.setExactAndAllowWhileIdle(
+                        android.app.AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                } else {
+                     alarmManager.setAndAllowWhileIdle(
+                        android.app.AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                }
+            } else {
                  alarmManager.setExactAndAllowWhileIdle(
                     android.app.AlarmManager.RTC_WAKEUP,
                     triggerTime,
                     pendingIntent
                 )
-            } else {
-                 alarmManager.setAndAllowWhileIdle(
-                    android.app.AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
             }
-        } else {
-             alarmManager.setExactAndAllowWhileIdle(
-                android.app.AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
         }
     }
 

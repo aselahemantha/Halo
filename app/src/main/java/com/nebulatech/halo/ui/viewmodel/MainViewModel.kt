@@ -33,6 +33,13 @@ class MainViewModel @Inject constructor(
             initialValue = AppTheme.SYSTEM
         )
 
+    val dynamicColor: StateFlow<Boolean> = userPreferencesRepository.dynamicColor
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
     val isFirstLaunch: StateFlow<Boolean> = userPreferencesRepository.isFirstLaunch
         .stateIn(
             scope = viewModelScope,

@@ -61,7 +61,8 @@ fun HaloNavHost(
                 onNavigateToAddAlarm = { navController.navigate(Screen.AddAlarm.route) },
                 onNavigateToEditAlarm = { alarmId -> navController.navigate(Screen.EditAlarm.createRoute(alarmId)) },
                 onNavigateToHistory = { navController.navigate(Screen.AlarmHistory.route) },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                navController = navController
             )
         }
         composable(Screen.AddAlarm.route) {
@@ -78,7 +79,6 @@ fun HaloNavHost(
             AlarmTriggerScreen(
                 alarmId = alarmId,
                 onNavigateBack = {
-                    // Reset backstack to Home
                     navController.navigate(Screen.Home.route) {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
@@ -98,13 +98,15 @@ fun HaloNavHost(
         }
         composable(Screen.AlarmHistory.route) {
             AlarmHistoryScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                navController = navController
             )
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToWalkthrough = { navController.navigate(Screen.Walkthrough.route) }
+                onNavigateToWalkthrough = { navController.navigate(Screen.Walkthrough.route) },
+                navController = navController
             )
         }
         composable(Screen.Walkthrough.route) {

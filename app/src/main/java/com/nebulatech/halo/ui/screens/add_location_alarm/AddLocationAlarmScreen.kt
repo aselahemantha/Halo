@@ -24,11 +24,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
@@ -37,6 +39,11 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -189,7 +196,7 @@ fun AddLocationAlarmScreen(
                             .padding(end = 16.dp),
                 ) {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.cd_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.cd_back))
                     }
                     Text(
                         text =
@@ -426,7 +433,7 @@ fun AddLocationAlarmScreen(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                         ),
                     leadingIcon = {
-                        Icon(Icons.Default.Label, null, tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.AutoMirrored.Filled.Label, null, tint = MaterialTheme.colorScheme.primary)
                     },
                     placeholder = { Text(stringResource(R.string.location_name_hint)) },
                 )
@@ -444,27 +451,34 @@ fun AddLocationAlarmScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    val categories =
-                        listOf(
-                            "General" to R.string.cat_general,
-                            "Work" to R.string.cat_work,
-                            "Home" to R.string.cat_home,
-                            "Travel" to R.string.cat_travel,
-                            "Store" to R.string.cat_store,
-                        )
-                    items(categories.size) { index ->
-                        val (catKey, resId) = categories[index]
-                        FilterChip(
-                            selected = category == catKey,
-                            onClick = { viewModel.updateCategory(catKey) },
-                            label = { Text(stringResource(resId)) },
-                            colors =
-                                FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                ),
-                        )
-                    }
+                val categories =
+                    listOf(
+                        Triple("General", R.string.cat_general, Icons.AutoMirrored.Filled.Label),
+                        Triple("Work", R.string.cat_work, Icons.Default.Work),
+                        Triple("Home", R.string.cat_home, Icons.Default.Home),
+                        Triple("Travel", R.string.cat_travel, Icons.Default.Explore),
+                        Triple("Store", R.string.cat_store, Icons.Default.Storefront),
+                    )
+                items(categories.size) { index ->
+                    val (catKey, resId, icon) = categories[index]
+                    FilterChip(
+                        selected = category == catKey,
+                        onClick = { viewModel.updateCategory(catKey) },
+                        label = { Text(stringResource(resId)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            ),
+                    )
+                }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -494,23 +508,24 @@ fun AddLocationAlarmScreen(
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
-                        stringResource(R.string.radius_100m),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                    )
-                    Text(
-                        stringResource(R.string.radius_2_5km),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                    )
-                    Text(
-                        stringResource(R.string.radius_5km),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                    )
+                    val presets = listOf(200 to "200m", 500 to "500m", 1000 to "1km", 2000 to "2km")
+                    presets.forEach { (valMeters, label) ->
+                        val isSelected = radius.toInt() == valMeters
+                        androidx.compose.material3.SuggestionChip(
+                            onClick = { viewModel.updateRadius(valMeters.toDouble()) },
+                            label = { Text(label, style = MaterialTheme.typography.labelMedium) },
+                            colors = androidx.compose.material3.SuggestionChipDefaults.suggestionChipColors(
+                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            border = androidx.compose.material3.SuggestionChipDefaults.suggestionChipBorder(
+                                enabled = true,
+                                borderColor = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -526,23 +541,47 @@ fun AddLocationAlarmScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val map =
-                        mapOf(
-                            "ENTER" to stringResource(R.string.trigger_enter),
-                            "EXIT" to stringResource(R.string.trigger_exit),
-                            "DWELL" to stringResource(R.string.trigger_dwell),
-                        )
-                    map.forEach { (type, label) ->
-                        FilterChip(
-                            selected = triggerType == type,
-                            onClick = { viewModel.updateTriggerType(type) },
-                            label = { Text(label) },
-                            colors =
-                                FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                ),
-                        )
+                    val triggerOptions = listOf(
+                        Triple("ENTER", stringResource(R.string.trigger_enter), Icons.AutoMirrored.Filled.Login),
+                        Triple("EXIT", stringResource(R.string.trigger_exit), Icons.AutoMirrored.Filled.Logout),
+                        Triple("DWELL", stringResource(R.string.trigger_dwell), Icons.Default.Timer),
+                    )
+                    triggerOptions.forEach { (type, label, icon) ->
+                        val isSelected = triggerType == type
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(72.dp)
+                                .clickable { viewModel.updateTriggerType(type) },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
 

@@ -207,22 +207,6 @@ fun AlarmTriggerScreen(
             }
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Secondary Action
-            TextButton(
-                onClick = { /* Remind later */ },
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "Remind me in 500m", 
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Box(modifier = Modifier.width(40.dp).height(2.dp).background(onSurfaceVariant.copy(alpha = 0.3f)))
-                }
-            }
         }
     }
 }

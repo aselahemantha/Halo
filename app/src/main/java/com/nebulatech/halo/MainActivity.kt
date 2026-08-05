@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,6 +35,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         com.google.android.gms.maps.MapsInitializer.initialize(applicationContext, com.google.android.gms.maps.MapsInitializer.Renderer.LATEST, null)
 
         showOnLockScreen()
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel = hiltViewModel<MainViewModel>()
             val appTheme by viewModel.appTheme.collectAsState()
+            val dynamicColor by viewModel.dynamicColor.collectAsState()
             
             // Use system default if null
             val darkTheme = when (appTheme) {
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
                  AppTheme.SYSTEM -> isSystemInDarkTheme()
             }
 
-            HaloTheme(darkTheme = darkTheme) {
+            HaloTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

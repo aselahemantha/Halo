@@ -37,6 +37,20 @@ class SettingsViewModel @Inject constructor(
             initialValue = AppTheme.SYSTEM
         )
 
+    val dynamicColor: StateFlow<Boolean> = userPreferencesRepository.dynamicColor
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
+    val snoozeDuration: StateFlow<Int> = userPreferencesRepository.snoozeDuration
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 5
+        )
+
     val alarmSound: StateFlow<Pair<String, String>> = userPreferencesRepository.alarmSound
         .stateIn(
             scope = viewModelScope,
@@ -115,6 +129,18 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             userPreferencesRepository.setTheme(theme)
+        }
+    }
+
+    fun setDynamicColor(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setDynamicColor(enabled)
+        }
+    }
+
+    fun setSnoozeDuration(minutes: Int) {
+        viewModelScope.launch {
+            userPreferencesRepository.setSnoozeDuration(minutes)
         }
     }
 

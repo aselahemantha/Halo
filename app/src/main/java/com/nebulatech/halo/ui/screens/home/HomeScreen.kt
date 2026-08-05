@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material.icons.filled.SsidChart
 import androidx.compose.material3.AlertDialog
@@ -74,6 +75,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nebulatech.halo.R
 import com.nebulatech.halo.domain.model.Alarm
 import com.nebulatech.halo.ui.components.MapPreviewCard
+import com.nebulatech.halo.ui.components.BottomNavBar
+import androidx.navigation.NavController
 import com.nebulatech.halo.ui.screens.home.widgets.AlarmItem
 import com.nebulatech.halo.ui.screens.home.widgets.CurrentStatusCard
 import com.nebulatech.halo.ui.screens.home.widgets.StatsCard
@@ -96,6 +99,7 @@ fun HomeScreen(
     onNavigateToEditAlarm: (Long) -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    navController: NavController,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val alarms by viewModel.alarms.collectAsState()
@@ -184,20 +188,6 @@ fun HomeScreen(
                 navigationIcon = {
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(
-                            imageVector = Icons.Default.List,
-                            contentDescription = stringResource(R.string.cd_alarm_history),
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.SettingsSuggest,
-                            contentDescription = stringResource(R.string.cd_settings),
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
                 },
                 colors =
                     TopAppBarDefaults.topAppBarColors(
@@ -205,6 +195,9 @@ fun HomeScreen(
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
                     ),
             )
+        },
+        bottomBar = {
+            BottomNavBar(navController = navController)
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -301,8 +294,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         leadingIcon = {
-                            // Replace with Search icon if you have one, using List for now
-                            Icon(Icons.Default.List, contentDescription = stringResource(R.string.cd_search_icon))
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_search_icon))
                         },
                     )
                 }

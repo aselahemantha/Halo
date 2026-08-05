@@ -23,6 +23,8 @@ class UserPreferencesRepository @Inject constructor(
     private val ALARM_SOUND_TITLE_KEY = stringPreferencesKey("alarm_sound_title")
     private val IS_FIRST_LAUNCH_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("is_first_launch")
     private val LAST_PROMPTED_VERSION_KEY = androidx.datastore.preferences.core.intPreferencesKey("last_prompted_version")
+    private val DYNAMIC_COLOR_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("is_dynamic_color")
+    private val SNOOZE_DURATION_KEY = androidx.datastore.preferences.core.intPreferencesKey("snooze_duration")
 
     val appTheme: Flow<AppTheme> = context.dataStore.data
         .map { preferences ->
@@ -32,6 +34,16 @@ class UserPreferencesRepository @Inject constructor(
             } catch (e: IllegalArgumentException) {
                 AppTheme.SYSTEM
             }
+        }
+
+    val dynamicColor: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[DYNAMIC_COLOR_KEY] ?: false
+        }
+
+    val snoozeDuration: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[SNOOZE_DURATION_KEY] ?: 5
         }
 
     val alarmSound: Flow<Pair<String, String>> = context.dataStore.data
@@ -73,6 +85,18 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setLastPromptedVersion(version: Int) {
         context.dataStore.edit { preferences ->
             preferences[LAST_PROMPTED_VERSION_KEY] = version
+        }
+    }
+
+    suspend fun setDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[DYNAMIC_COLOR_KEY] = enabled
+        }
+    }
+
+    suspend fun setSnoozeDuration(minutes: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[SNOOZE_DURATION_KEY] = minutes
         }
     }
 }

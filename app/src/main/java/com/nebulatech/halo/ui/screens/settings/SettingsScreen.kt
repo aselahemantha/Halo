@@ -24,11 +24,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
@@ -41,7 +43,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,12 +89,15 @@ import com.nebulatech.halo.R
 import com.nebulatech.halo.data.repository.AppTheme
 import com.nebulatech.halo.ui.screens.settings.widgets.*
 import com.nebulatech.halo.ui.viewmodel.SettingsViewModel
+import com.nebulatech.halo.ui.components.BottomNavBar
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToWalkthrough: () -> Unit,
+    navController: NavController,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val locationGranted by viewModel.locationPermissionGranted.collectAsState()
@@ -109,7 +113,7 @@ fun SettingsScreen(
 
     val context = LocalContext.current
 
-    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
         val observer =
@@ -129,6 +133,7 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        bottomBar = { BottomNavBar(navController = navController) },
         topBar = {
             TopAppBar(
                 title = {
@@ -142,7 +147,7 @@ fun SettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.cd_back), tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.cd_back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = { Spacer(modifier = Modifier.width(48.dp)) }, // Center title trick
@@ -368,6 +373,30 @@ fun SettingsScreen(
                         onDismiss = { showThemeDialog = false },
                     )
                 }
+
+                SettingsDivider()
+
+                val dynamicColor by viewModel.dynamicColor.collectAsState()
+
+                SettingsItem(
+                    icon = Icons.Default.ColorLens,
+                    title = "Material You Theme",
+                    subtitle = "Use system wallpaper colors for app theme",
+                    trailing = {
+                        Switch(
+                            checked = dynamicColor,
+                            onCheckedChange = { viewModel.setDynamicColor(it) },
+                            colors =
+                                SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                    uncheckedThumbColor = Color.White,
+                                    uncheckedTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                    uncheckedBorderColor = Color.Transparent,
+                                ),
+                        )
+                    },
+                )
             }
 
             // 3. ALERT SOUNDS
@@ -407,6 +436,44 @@ fun SettingsScreen(
                             showSoundDialog = false
                         },
                         onDismiss = { showSoundDialog = false },
+                    )
+                }
+
+                SettingsDivider()
+
+                val snoozeDuration by viewModel.snoozeDuration.collectAsState()
+                var showSnoozeDialog by remember { mutableStateOf(false) }
+
+                SettingsItem(
+                    icon = Icons.Default.HourglassEmpty,
+                    title = "Snooze Duration",
+                    subtitle = "$snoozeDuration minutes",
+                    trailing = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Modify",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    },
+                    onClick = { showSnoozeDialog = true },
+                )
+
+                if (showSnoozeDialog) {
+                    SnoozeDurationDialog(
+                        currentDuration = snoozeDuration,
+                        onDurationSelected = {
+                            viewModel.setSnoozeDuration(it)
+                            showSnoozeDialog = false
+                        },
+                        onDismiss = { showSnoozeDialog = false }
                     )
                 }
             }
@@ -562,6 +629,60 @@ fun SettingsScreen(
                     letterSpacing = 2.sp,
                 )
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun SnoozeDurationDialog(
+    currentDuration: Int,
+    onDurationSelected: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val options = listOf(5, 10, 15, 30)
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Snooze Duration",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                options.forEach { minutes ->
+                    val isSelected = minutes == currentDuration
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onDurationSelected(minutes) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onDurationSelected(minutes) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "$minutes minutes",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
         }
     }
